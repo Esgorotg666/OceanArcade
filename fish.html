@@ -45,18 +45,26 @@ body{background:#020d1a;color:#fff;font-family:'Segoe UI',Arial,sans-serif;
 #gameWrap{position:relative;flex:1;overflow:hidden;cursor:crosshair}
 #gameCanvas{display:block;width:100%;height:100%}
 
-/* ── Weapon bar ── */
-.weapon-bar{
-  position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
-  display:flex;gap:6px;z-index:15;
+/* ── Bet / Weapon bar ── */
+.bet-bar{
+  position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;gap:5px;align-items:center;z-index:15;
 }
-.weapon-btn{
-  background:rgba(0,0,0,.65);border:1.5px solid #334;
-  color:#aaa;padding:5px 10px;border-radius:14px;cursor:pointer;
-  font-size:.76em;font-weight:700;transition:.15s;white-space:nowrap;
+.bet-row{display:flex;gap:5px;}
+.bet-btn{
+  background:rgba(0,0,0,.7);border:1.5px solid #334;
+  color:#aaa;padding:4px 9px;border-radius:10px;cursor:pointer;
+  font-size:.74em;font-weight:700;transition:.15s;white-space:nowrap;letter-spacing:.5px;
 }
-.weapon-btn.active{border-color:#ffd700;color:#ffd700;background:rgba(255,215,0,.14)}
-.weapon-btn:hover:not(.active){border-color:#556}
+.bet-btn.active{border-color:#ffd700;color:#ffd700;background:rgba(255,215,0,.16)}
+.bet-btn:hover:not(.active){border-color:#556;color:#ccc}
+.wpn-btn{
+  background:rgba(0,0,0,.7);border:1.5px solid #334;
+  color:#aaa;padding:4px 11px;border-radius:10px;cursor:pointer;
+  font-size:.74em;font-weight:700;transition:.15s;white-space:nowrap;
+}
+.wpn-btn.active{border-color:#00ffff;color:#00ffff;background:rgba(0,255,255,.1)}
+.wpn-btn:hover:not(.active){border-color:#556;color:#ccc}
 
 /* ── Overlays ── */
 .overlay{
@@ -127,12 +135,22 @@ body{background:#020d1a;color:#fff;font-family:'Segoe UI',Arial,sans-serif;
   <canvas id="gameCanvas"></canvas>
   <span id="soundToggle" onclick="toggleSound()">🔊</span>
 
-  <div class="weapon-bar">
-    <button class="weapon-btn active" onclick="setWeapon(0)" id="wb0">🟡 BASIC ×1</button>
-    <button class="weapon-btn" onclick="setWeapon(1)" id="wb1">🟠 POWER ×3</button>
-    <button class="weapon-btn" onclick="setWeapon(2)" id="wb2">🔴 LASER ×5</button>
-    <button class="weapon-btn" onclick="setWeapon(3)" id="wb3">💣 BOMB ×10</button>
-    <button class="weapon-btn" onclick="setWeapon(4)" id="wb4">⚡ ELEC ×15</button>
+  <div class="bet-bar">
+    <div class="bet-row" id="betRow">
+      <button class="bet-btn" onclick="setBet(0)" id="bb0">BET ×1</button>
+      <button class="bet-btn active" onclick="setBet(1)" id="bb1">BET ×2</button>
+      <button class="bet-btn" onclick="setBet(2)" id="bb2">BET ×5</button>
+      <button class="bet-btn" onclick="setBet(3)" id="bb3">BET ×10</button>
+      <button class="bet-btn" onclick="setBet(4)" id="bb4">BET ×20</button>
+      <button class="bet-btn" onclick="setBet(5)" id="bb5">BET ×50</button>
+      <button class="bet-btn" onclick="setBet(6)" id="bb6">BET ×100</button>
+    </div>
+    <div class="bet-row" id="wpnRow">
+      <button class="wpn-btn active" onclick="setWpn(0)" id="wp0">🟡 NORMAL</button>
+      <button class="wpn-btn" onclick="setWpn(1)" id="wp1">🔴 LASER ×5</button>
+      <button class="wpn-btn" onclick="setWpn(2)" id="wp2">💣 BOMB ×10</button>
+      <button class="wpn-btn" onclick="setWpn(3)" id="wp3">⚡ ELEC ×15</button>
+    </div>
   </div>
 
   <div id="bigMsg"></div>
@@ -141,15 +159,16 @@ body{background:#020d1a;color:#fff;font-family:'Segoe UI',Arial,sans-serif;
     <h2>🌊 FISH SHOOTING</h2>
     <p>
       Click/tap to shoot • Hold to auto-fire<br>
-      Keys 1-5 switch weapons<br><br>
-      🟡 Basic ×1 → normal shot<br>
-      🟠 Power ×3 → AOE on impact<br>
-      🔴 Laser ×5 → pierces all fish<br>
-      💣 Bomb ×10 → huge explosion<br>
-      ⚡ Elec ×15 → chain lightning (5 fish!)<br><br>
-      🎁 Treasure chests drift by — shoot them for bonus coins!<br>
-      ❄️ Kill a jellyfish to freeze all fish for 3 seconds!<br><br>
-      Kill fast to build COMBO (up to ×5 bonus)!
+      Cannon is in the <b>bottom-left corner</b><br><br>
+      <b>BET MULTIPLIER</b> — scales cost &amp; rewards together<br>
+      Higher bet = stronger bullets + bigger payouts<br><br>
+      🟡 Normal → standard shot<br>
+      🔴 Laser ×5 → pierces all fish instantly<br>
+      💣 Bomb ×10 → massive AOE explosion<br>
+      ⚡ Elec ×15 → chain lightning jumps 5 fish<br><br>
+      🎁 Treasure chests drift by every 30s — shoot them!<br>
+      ❄️ Kill a 🪼 jellyfish to freeze all fish 3 seconds<br><br>
+      Kill fast to build COMBO multiplier (up to ×5)!
     </p>
     <button class="big-btn" onclick="startGame()">▶ START GAME</button>
   </div>
@@ -224,10 +243,14 @@ function toggleSound(){ soundOn=!soundOn; document.getElementById('soundToggle')
 
 // ══════════ STATE ══════════
 let gameRunning=false,gamePaused=false;
-let score=0,level=1,fishThisWave=0,waveGoal=10,spawnInterval=DEEP_MODE?1100:1600;
-let weaponIdx=0;
-const W_COST=[1,3,5,10,15];
-const W_DMG =[1,3,5,8,6];
+let score=0,level=1,fishThisWave=0,waveGoal=10,spawnInterval=DEEP_MODE?480:700;
+// Juwa-style bet multiplier — scales shot cost AND fish rewards
+const BET_VALS=[1,2,5,10,20,50,100];
+let betIdx=1; // default ×2
+// Weapon type: 0=normal 1=laser 2=bomb 3=elec
+let weaponType=0;
+const WPN_COST_MULT=[1,5,10,15]; // multiples of current bet
+const WPN_COLORS=['#ffd700','#ff00ff','#a855f7','#00ffff'];
 
 // Combo
 let combo=0,comboTimer=null,lastKillTime=0;
@@ -316,8 +339,8 @@ function burst(x,y,colors,n=20,spd=6){
 
 // ══════════ FISH ══════════
 class Fish{
-  constructor(){
-    const t=pickFishType();
+  constructor(preset=null){
+    const t=preset||pickFishType();
     this.type=t;
     const hpBoost=DEEP_MODE&&t.special!=='boss'?Math.ceil(t.hp*0.5):0;
     this.hp=t.hp+hpBoost;this.maxHp=t.hp+hpBoost;
@@ -404,7 +427,7 @@ class Fish{
   onDeath(){
     const combo_m=getComboMult();
     const base=Math.floor(rand(this.type.reward[0],this.type.reward[1]));
-    const earned=Math.floor(base*combo_m*ROOM_MULTI);
+    const earned=Math.floor(base*combo_m*BET_VALS[betIdx]*ROOM_MULTI);
     setC(getC()+earned);
     score+=earned;
     addFish();addWin();
@@ -795,7 +818,7 @@ function drawBackground(){
 
 // ══════════ CANNON ══════════
 let mouseX=null,mouseY=null,cannonAngle=0,mouseDown=false;
-const CX=()=>W/2, CY=()=>H-18;
+const CX=()=>80, CY=()=>H-28;
 let autoFire=null;
 
 const wrap=document.getElementById('gameWrap');
@@ -809,34 +832,53 @@ wrap.addEventListener('touchend',()=>clearInterval(autoFire));
 
 function shoot(){
   if(!gameRunning||gamePaused)return;
-  const cost=W_COST[weaponIdx],credits=getC();
+  const bet=BET_VALS[betIdx];
+  const cost=bet*WPN_COST_MULT[weaponType];
+  const credits=getC();
   if(credits<cost){showGameOver();return;}
   setC(credits-cost);
   const tx=mouseX??CX(),ty=mouseY??(H/2);
   sndShoot();
-  if(weaponIdx===2){
-    lasers.push(new Laser(CX(),CY(),tx,ty,W_DMG[2]));
-  } else if(weaponIdx===3){
-    bullets.push(new BombBullet(CX(),CY(),tx,ty,W_DMG[3]));
-  } else if(weaponIdx===4){
-    chains.push(new ElectricChain(CX(),CY(),tx,ty,W_DMG[4]));
+  // Damage scales with bet level (1→8)
+  const dmg=Math.max(1,Math.ceil(betIdx*1.3));
+  if(weaponType===1){
+    lasers.push(new Laser(CX(),CY(),tx,ty,dmg*2));
+  } else if(weaponType===2){
+    bullets.push(new BombBullet(CX(),CY(),tx,ty,dmg*3));
+  } else if(weaponType===3){
+    chains.push(new ElectricChain(CX(),CY(),tx,ty,dmg*2));
   } else {
-    bullets.push(new Bullet(CX(),CY(),tx,ty,W_DMG[weaponIdx],weaponIdx));
+    bullets.push(new Bullet(CX(),CY(),tx,ty,dmg,0));
   }
 }
 
-const CANNON_COLORS=['#ffd700','#ff9f1c','#ff00ff','#a855f7','#00ffff'];
 function drawCannon(){
   const cx=CX(),cy=CY();
-  ctx.save();ctx.translate(cx,cy);ctx.rotate(cannonAngle-Math.PI/2);
-  ctx.beginPath();ctx.arc(0,0,17,0,Math.PI*2);
-  const bg=ctx.createRadialGradient(0,0,4,0,0,17);
+  const col=WPN_COLORS[weaponType];
+  ctx.save();
+  // Corner platform base
+  ctx.fillStyle='rgba(5,20,40,.85)';
+  ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.shadowBlur=8;ctx.shadowColor=col;
+  ctx.beginPath();ctx.roundRect(cx-28,cy-6,56,28,5);
+  ctx.fill();ctx.stroke();
+  // Bet level indicator on platform
+  ctx.shadowBlur=0;ctx.globalAlpha=.8;
+  ctx.fillStyle=col;ctx.font='bold 9px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('×'+BET_VALS[betIdx],cx,cy+8);
+  // Turret pivot
+  ctx.globalAlpha=1;ctx.translate(cx,cy-4);ctx.rotate(cannonAngle-Math.PI/2);
+  const bg=ctx.createRadialGradient(0,0,3,0,0,15);
   bg.addColorStop(0,'#2a3a4a');bg.addColorStop(1,'#0d1e2b');
-  ctx.fillStyle=bg;ctx.shadowBlur=12;ctx.shadowColor=CANNON_COLORS[weaponIdx];ctx.fill();
-  ctx.fillStyle='#344858';ctx.strokeStyle=CANNON_COLORS[weaponIdx];ctx.lineWidth=1.5;
-  ctx.fillRect(-5.5,-24,11,24);ctx.strokeRect(-5.5,-24,11,24);
-  ctx.beginPath();ctx.arc(0,0,20,0,Math.PI*2);
-  ctx.strokeStyle=CANNON_COLORS[weaponIdx];ctx.globalAlpha=.55;ctx.lineWidth=2;ctx.stroke();
+  ctx.beginPath();ctx.arc(0,0,15,0,Math.PI*2);
+  ctx.fillStyle=bg;ctx.shadowBlur=14;ctx.shadowColor=col;ctx.fill();
+  ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.stroke();
+  // Barrel
+  ctx.fillStyle='#344858';ctx.strokeStyle=col;ctx.lineWidth=1.5;
+  ctx.fillRect(-5,-22,10,22);ctx.strokeRect(-5,-22,10,22);
+  // Muzzle glow
+  ctx.shadowBlur=10;ctx.shadowColor=col;
+  ctx.fillStyle=col;ctx.globalAlpha=.6;
+  ctx.beginPath();ctx.arc(0,-22,4,0,Math.PI*2);ctx.fill();
   ctx.restore();
 }
 
@@ -894,9 +936,9 @@ function gameLoop(ts){
     }
   }
 
-  // Spawn fish
+  // Spawn fish (schools + individuals)
   if(ts-lastSpawn>spawnInterval){
-    fishes.push(new Fish());lastSpawn=ts;
+    spawnFish();lastSpawn=ts;
     fishThisWave++;if(fishThisWave>=waveGoal)levelUp();
   }
 
@@ -993,19 +1035,48 @@ function gameLoop(ts){
 
 function levelUp(){
   level++;fishThisWave=0;
-  waveGoal=10+level*2;
-  const baseInterval=DEEP_MODE?1100:1600;
-  const minInterval=DEEP_MODE?450:650;
-  spawnInterval=Math.max(minInterval,baseInterval-level*80);
+  waveGoal=15+level*3;
+  const baseInterval=DEEP_MODE?480:700;
+  const minInterval=DEEP_MODE?200:300;
+  spawnInterval=Math.max(minInterval,baseInterval-level*40);
   document.getElementById('levelVal').textContent=level;
   sndLevel();flashBig('🌊 LEVEL '+level+'  UP!','#00d4ff');
 }
 
 // ══════════ CONTROLS ══════════
-function setWeapon(i){
-  weaponIdx=i;
-  document.querySelectorAll('.weapon-btn').forEach((b,j)=>b.classList.toggle('active',i===j));
-  document.getElementById('ammoVal').textContent=W_COST[i]+'💰';
+function setBet(i){
+  betIdx=i;
+  document.querySelectorAll('.bet-btn').forEach((b,j)=>b.classList.toggle('active',i===j));
+  updateAmmoDisplay();
+}
+function setWpn(t){
+  weaponType=t;
+  document.querySelectorAll('.wpn-btn').forEach((b,j)=>b.classList.toggle('active',t===j));
+  updateAmmoDisplay();
+}
+function updateAmmoDisplay(){
+  const cost=BET_VALS[betIdx]*WPN_COST_MULT[weaponType];
+  document.getElementById('ammoVal').textContent=cost+'💰';
+}
+
+// ══════════ FISH SPAWNING ══════════
+function spawnFish(){
+  // 35% chance to spawn a school of 2-4 small fish together (like real Juwa)
+  if(Math.random()<0.35){
+    const smallTypes=FISH_TYPES.filter(t=>!t.special&&t.hp<=4);
+    const t=smallTypes[Math.floor(Math.random()*smallTypes.length)];
+    const count=2+Math.floor(Math.random()*3);
+    for(let i=0;i<count;i++){
+      setTimeout(()=>{
+        if(!gameRunning||gamePaused)return;
+        const f=new Fish(t);
+        f.y=Math.max(40,Math.min(H*0.76,f.y+(i-1)*rand(30,50)));
+        fishes.push(f);
+      },i*100);
+    }
+  } else {
+    fishes.push(new Fish());
+  }
 }
 
 function togglePause(){
@@ -1020,8 +1091,8 @@ function startGame(){
   document.getElementById('startOverlay').classList.remove('active');
   gameRunning=true;gamePaused=false;
   fishes=[];bullets=[];lasers=[];chains=[];explosions=[];particles=[];chests=[];
-  score=0;level=1;fishThisWave=0;waveGoal=10;
-  spawnInterval=DEEP_MODE?1100:1600;
+  score=0;level=1;fishThisWave=0;waveGoal=15;
+  spawnInterval=DEEP_MODE?480:700;
   combo=0;lastKillTime=0;activeBoss=null;freezeUntil=0;lastChestSpawn=0;
   document.getElementById('scoreVal').textContent='0';
   document.getElementById('levelVal').textContent='1';
@@ -1031,6 +1102,8 @@ function startGame(){
   const rb=document.getElementById('roomBadge');
   if(DEEP_MODE){rb.textContent='🌊 DEEP SEA ×2';rb.style.color='#00d4ff';rb.style.borderColor='#00d4ff';}
   else{rb.textContent='🎮 NORMAL';rb.style.color='#aaa';rb.style.borderColor='#556';}
+  // Reset bet/weapon display
+  setBet(betIdx);setWpn(weaponType);
   setC(getC());
   if(animFrame)cancelAnimationFrame(animFrame);
   animFrame=requestAnimationFrame(gameLoop);
@@ -1039,7 +1112,7 @@ function startGame(){
 function restartGame(){
   document.getElementById('gameOverOverlay').classList.remove('active');
   chains=[];chests=[];freezeUntil=0;lastChestSpawn=0;
-  if(getC()<W_COST[0])setC(200);
+  if(getC()<BET_VALS[0])setC(200);
   startGame();
 }
 
@@ -1051,14 +1124,17 @@ function showGameOver(){
 
 document.addEventListener('keydown',e=>{
   if(e.code==='Space'||e.code==='Escape'){e.preventDefault();togglePause();}
-  if(e.code==='Digit1')setWeapon(0);if(e.code==='Digit2')setWeapon(1);
-  if(e.code==='Digit3')setWeapon(2);if(e.code==='Digit4')setWeapon(3);
-  if(e.code==='Digit5')setWeapon(4);
+  // Digits 1-7 = bet level
+  const d={'Digit1':0,'Digit2':1,'Digit3':2,'Digit4':3,'Digit5':4,'Digit6':5,'Digit7':6};
+  if(d[e.code]!==undefined)setBet(d[e.code]);
+  // Q/W/E/R = weapon type
+  if(e.code==='KeyQ')setWpn(0);if(e.code==='KeyW')setWpn(1);
+  if(e.code==='KeyE')setWpn(2);if(e.code==='KeyR')setWpn(3);
 });
 
 // init
 setC(getC());
-document.getElementById('ammoVal').textContent=W_COST[0]+'💰';
+updateAmmoDisplay();
 </script>
 </body>
 </html>
