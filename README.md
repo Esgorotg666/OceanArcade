@@ -36,10 +36,10 @@ Access via: `fish.html?room=deep`
 
 | Game | Link |
 |------|------|
-| 🏠 Lobby | `https://esgorotg666.github.io/ocean-monster-slots-arcade/` |
-| 🐟 Fish Shooting | `https://esgorotg666.github.io/ocean-monster-slots-arcade/fish.html` |
-| 🌊 Deep Sea Hunter | `https://esgorotg666.github.io/ocean-monster-slots-arcade/fish.html?room=deep` |
-| 🎰 Lucky Slots | `https://esgorotg666.github.io/ocean-monster-slots-arcade/slots.html` |
+| 🏠 Lobby | `https://esgorotg666.github.io/OceanArcade/` |
+| 🐟 Fish Shooting | `https://esgorotg666.github.io/OceanArcade/fish.html` |
+| 🌊 Deep Sea Hunter | `https://esgorotg666.github.io/OceanArcade/fish.html?room=deep` |
+| 🎰 Lucky Slots | `https://esgorotg666.github.io/OceanArcade/slots.html` |
 
 ---
 
