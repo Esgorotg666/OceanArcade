@@ -859,7 +859,8 @@ function drawCannon(){
   // Corner platform base
   ctx.fillStyle='rgba(5,20,40,.85)';
   ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.shadowBlur=8;ctx.shadowColor=col;
-  ctx.beginPath();ctx.roundRect(cx-28,cy-6,56,28,5);
+  ctx.beginPath();
+  (function(x,y,w,h,r){ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();})(cx-28,cy-6,56,28,5);
   ctx.fill();ctx.stroke();
   // Bet level indicator on platform
   ctx.shadowBlur=0;ctx.globalAlpha=.8;
