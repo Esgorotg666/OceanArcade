@@ -826,8 +826,8 @@ wrap.addEventListener('mousemove',e=>{ const r=canvas.getBoundingClientRect(); m
 wrap.addEventListener('mousedown',e=>{ if(e.button!==0)return; mouseDown=true;shoot();autoFire=setInterval(shoot,280); });
 wrap.addEventListener('mouseup',()=>{ mouseDown=false;clearInterval(autoFire); });
 wrap.addEventListener('mouseleave',()=>{ mouseDown=false;clearInterval(autoFire); });
-wrap.addEventListener('touchmove',e=>{ e.preventDefault();const r=canvas.getBoundingClientRect(),t=e.touches[0];mouseX=t.clientX-r.left;mouseY=t.clientY-r.top;cannonAngle=Math.atan2(mouseY-CY(),mouseX-CX()); },{passive:false});
-wrap.addEventListener('touchstart',e=>{ e.preventDefault();const r=canvas.getBoundingClientRect(),t=e.touches[0];mouseX=t.clientX-r.left;mouseY=t.clientY-r.top;shoot();autoFire=setInterval(shoot,300); },{passive:false});
+wrap.addEventListener('touchmove',e=>{ if(!gameRunning||gamePaused)return; e.preventDefault();const r=canvas.getBoundingClientRect(),t=e.touches[0];mouseX=t.clientX-r.left;mouseY=t.clientY-r.top;cannonAngle=Math.atan2(mouseY-CY(),mouseX-CX()); },{passive:false});
+wrap.addEventListener('touchstart',e=>{ if(!gameRunning||gamePaused)return; e.preventDefault();const r=canvas.getBoundingClientRect(),t=e.touches[0];mouseX=t.clientX-r.left;mouseY=t.clientY-r.top;shoot();autoFire=setInterval(shoot,300); },{passive:false});
 wrap.addEventListener('touchend',()=>clearInterval(autoFire));
 
 function shoot(){
