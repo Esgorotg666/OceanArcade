@@ -851,6 +851,7 @@ function drawBackground(){
   ctx.globalAlpha=1;ctx.fillStyle=surf;ctx.fillRect(0,0,W,38);
   ctx.restore();
 
+
   // Dramatic light shafts (10, screen blend, animated)
   ctx.save();ctx.globalCompositeOperation='screen';
   for(let i=0;i<10;i++){
@@ -914,6 +915,7 @@ function drawBackground(){
     ctx.beginPath();ctx.moveTo(0,fy);ctx.lineTo(W,fy);ctx.stroke();
   }
   ctx.restore();
+
 
   // Layered sand floor
   const sand=ctx.createLinearGradient(0,H-32,0,H);
