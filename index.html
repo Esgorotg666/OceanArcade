@@ -1,49 +1,745 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Best Budget Noise Cancelling Headphones 2026</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; line-height: 1.6; background: #f9f9f9; color: #333; }
-        h1, h2 { color: #2c3e50; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background: #3498db; color: white; }
-        .hero { background: linear-gradient(#1e3a8a, #3b82f6); color: white; padding: 50px 20px; text-align: center; border-radius: 12px; margin-bottom: 30px; }
-        .cta { background: #22c55e; color: white; padding: 18px 35px; text-decoration: none; border-radius: 8px; font-size: 1.3em; display: inline-block; margin: 15px 0; }
-        .disclosure { font-size: 0.85em; color: #666; text-align: center; margin: 30px 0; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JUWA 2.0 – Game Platform</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#030b1a;--card:#060f22;--cyan:#00d4ff;--gold:#ffd700;
+  --orange:#ff6b35;--green:#00ff88;--purple:#a855f7;--red:#ff3355;
+}
+body{background:var(--bg);color:#fff;font-family:'Segoe UI',Arial,sans-serif;
+  min-height:100vh;overflow-x:hidden;}
+
+/* ── animated bg ── */
+#bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+/* ── header ── */
+header{
+  position:sticky;top:0;z-index:50;
+  background:rgba(3,11,26,.97);backdrop-filter:blur(10px);
+  border-bottom:2px solid rgba(0,212,255,.4);
+  box-shadow:0 2px 30px rgba(0,212,255,.2);
+}
+.header-inner{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;gap:10px;}
+.logo-block{display:flex;flex-direction:column}
+.logo-text{
+  font-size:1.75em;font-weight:900;letter-spacing:3px;
+  background:linear-gradient(90deg,var(--cyan),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.logo-sub{font-size:.6em;color:#556;letter-spacing:2px;margin-top:-3px}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.vip-badge{
+  display:flex;align-items:center;gap:5px;
+  border-radius:20px;padding:5px 12px;font-size:.78em;font-weight:700;
+  letter-spacing:1px;border:1.5px solid;
+}
+.wallet-box{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,215,0,.1);border:1.5px solid var(--gold);
+  border-radius:26px;padding:6px 14px;cursor:pointer;transition:.15s;
+}
+.wallet-box:hover{background:rgba(255,215,0,.18)}
+.wallet-label{font-size:.66em;color:#aaa;letter-spacing:1px}
+#balanceDisplay{font-size:1.2em;font-weight:800;color:var(--gold)}
+
+/* ── nav bar ── */
+.nav-bar{
+  display:flex;gap:6px;padding:8px 16px;overflow-x:auto;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.nav-bar::-webkit-scrollbar{display:none}
+.nav-btn{
+  background:rgba(255,255,255,.04);border:1px solid #223;
+  color:#88a;padding:5px 14px;border-radius:16px;cursor:pointer;
+  font-size:.78em;font-weight:600;white-space:nowrap;transition:.15s;text-decoration:none;
+}
+.nav-btn.active,.nav-btn:hover{background:rgba(0,212,255,.12);border-color:var(--cyan);color:var(--cyan)}
+
+/* ── ticker ── */
+.ticker-bar{
+  position:relative;z-index:5;background:rgba(0,212,255,.06);
+  border-bottom:1px solid rgba(0,212,255,.15);overflow:hidden;padding:7px 0;
+}
+.ticker-inner{display:flex;gap:50px;white-space:nowrap;animation:ticker 22s linear infinite}
+.ticker-item{color:var(--gold);font-size:.82em;font-weight:600}
+.ticker-item em{color:#fff;font-style:normal;margin:0 3px}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ── wallet panel ── */
+.wallet-panel{
+  position:relative;z-index:5;
+  display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
+  padding:14px 16px;max-width:700px;margin:0 auto;
+}
+.wp-card{
+  flex:1;min-width:130px;background:var(--card);border:1px solid #1a2a40;
+  border-radius:14px;padding:14px 16px;text-align:center;
+}
+.wp-icon{font-size:1.6em;margin-bottom:4px}
+.wp-label{font-size:.64em;color:#556;letter-spacing:1px;margin-bottom:3px}
+.wp-val{font-size:1.4em;font-weight:800}
+.wp-btn{
+  display:block;margin-top:8px;padding:6px 0;border-radius:20px;
+  font-size:.76em;font-weight:700;letter-spacing:1px;cursor:pointer;border:none;transition:.15s;
+}
+.btn-deposit{background:linear-gradient(90deg,var(--orange),#ff9f1c);color:#000}
+.btn-deposit:hover{filter:brightness(1.12)}
+.btn-redeem{background:rgba(0,255,136,.12);color:var(--green);border:1px solid var(--green)}
+.btn-redeem:hover{background:rgba(0,255,136,.22)}
+
+/* ── streak bar ── */
+.streak-banner{
+  position:relative;z-index:5;
+  background:linear-gradient(90deg,rgba(255,107,53,.1),rgba(255,215,0,.12));
+  border-top:1px solid rgba(255,107,53,.2);border-bottom:1px solid rgba(255,215,0,.2);
+  padding:9px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  flex-wrap:wrap;max-width:none;
+}
+.streak-left{display:flex;align-items:center;gap:10px}
+.streak-flame{font-size:1.5em}
+.streak-info{line-height:1.3}
+.streak-num{font-size:1.1em;font-weight:800;color:var(--orange)}
+.streak-label{font-size:.7em;color:#88aacc}
+.streak-right{display:flex;align-items:center;gap:10px}
+.claim-btn{
+  background:linear-gradient(135deg,var(--orange),#ff9f1c);color:#000;
+  font-weight:800;font-size:.88em;padding:8px 20px;border:none;
+  border-radius:22px;cursor:pointer;box-shadow:0 0 16px rgba(255,107,53,.4);transition:.15s;
+}
+.claim-btn:hover{transform:scale(1.05);box-shadow:0 0 24px rgba(255,107,53,.7)}
+.claim-btn:disabled{background:#333;color:#666;cursor:not-allowed;box-shadow:none;transform:none}
+#claimTimer{font-size:.72em;color:#88aacc}
+
+/* ── stats bar ── */
+.stats-bar{
+  position:relative;z-index:5;
+  display:flex;justify-content:center;gap:0;flex-wrap:nowrap;overflow-x:auto;
+  border-top:1px solid #0d1a2a;border-bottom:1px solid #0d1a2a;
+  background:rgba(0,0,0,.2);
+}
+.stats-bar::-webkit-scrollbar{display:none}
+.stat-item{
+  flex:1;min-width:90px;text-align:center;padding:10px 6px;
+  border-right:1px solid #0d1a2a;
+}
+.stat-item:last-child{border-right:none}
+.stat-num{font-size:1.35em;font-weight:800;color:var(--cyan)}
+.stat-label{font-size:.62em;color:#556;letter-spacing:1px}
+
+/* ── section ── */
+.section-head{
+  position:relative;z-index:5;
+  display:flex;align-items:center;gap:10px;
+  padding:16px 18px 8px;font-size:1em;font-weight:700;
+  color:var(--cyan);letter-spacing:2px;text-transform:uppercase;
+}
+.section-head::after{content:'';flex:1;height:1px;background:rgba(0,212,255,.15)}
+
+/* ── games grid ── */
+.games-grid{
+  position:relative;z-index:5;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:14px;padding:0 16px 16px;max-width:860px;margin:0 auto;
+}
+.game-card{
+  background:var(--card);border:1.5px solid rgba(0,212,255,.14);
+  border-radius:16px;overflow:hidden;text-decoration:none;color:#fff;
+  transition:.22s;box-shadow:0 4px 20px rgba(0,0,0,.4);display:block;position:relative;
+}
+.game-card:hover{border-color:var(--cyan);transform:translateY(-4px);
+  box-shadow:0 8px 32px rgba(0,212,255,.28);}
+.game-thumb{
+  width:100%;height:130px;display:flex;align-items:center;justify-content:center;
+  font-size:4em;position:relative;overflow:hidden;
+}
+.thumb-fish{background:linear-gradient(135deg,#001a3d,#00346b,#005590)}
+.thumb-fish2{background:linear-gradient(135deg,#001a10,#003420,#00551a)}
+.thumb-slots{background:linear-gradient(135deg,#1a0030,#3d006b,#5a008e)}
+.thumb-keno{background:linear-gradient(135deg,#1a1a00,#3d3d00,#5a5a00)}
+.thumb-coming{background:linear-gradient(135deg,#111,#222);opacity:.55}
+.game-badge{
+  position:absolute;top:8px;right:8px;font-size:.32em;
+  padding:3px 9px;border-radius:16px;font-weight:700;letter-spacing:1px;
+}
+.badge-hot{background:var(--orange);color:#000}
+.badge-new{background:var(--green);color:#000}
+.badge-vip{background:linear-gradient(90deg,#ffd700,#ff9f1c);color:#000}
+.badge-soon{background:#2a2a2a;color:#666}
+.game-body{padding:12px 14px}
+.game-body h3{font-size:1em;font-weight:700;margin-bottom:3px}
+.game-body p{font-size:.76em;color:#88aacc;line-height:1.4}
+.play-row{display:flex;align-items:center;justify-content:space-between;margin-top:9px}
+.play-tag{
+  font-size:.72em;font-weight:700;padding:4px 12px;border-radius:14px;
+  background:linear-gradient(90deg,var(--cyan),#0095b3);color:#000;letter-spacing:.5px;
+}
+.room-tag{font-size:.68em;color:#556}
+.coming-tag{font-size:.72em;color:#445;font-weight:600}
+
+/* ── leaderboard ── */
+.leaderboard{
+  position:relative;z-index:5;max-width:860px;margin:0 auto;
+  padding:0 16px 16px;
+}
+.lb-row{
+  display:flex;align-items:center;gap:12px;
+  padding:9px 14px;background:var(--card);border:1px solid #1a2a40;
+  border-radius:12px;margin-bottom:8px;
+}
+.lb-rank{font-size:1.1em;font-weight:800;width:28px;text-align:center;color:#556}
+.lb-rank.gold{color:var(--gold)}
+.lb-rank.silver{color:#c0c0c0}
+.lb-rank.bronze{color:#cd7f32}
+.lb-name{flex:1;font-size:.88em;font-weight:600}
+.lb-game{font-size:.72em;color:#556}
+.lb-win{font-size:.95em;font-weight:800;color:var(--gold)}
+
+/* ── activity feed ── */
+.activity-feed{
+  position:relative;z-index:5;max-width:860px;margin:0 auto;
+  padding:0 16px 20px;display:flex;flex-direction:column;gap:6px;
+}
+.act-item{
+  display:flex;align-items:center;gap:10px;
+  background:var(--card);border:1px solid #1a2a40;border-radius:10px;padding:8px 12px;
+  animation:slideIn .3s ease-out;
+}
+@keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.act-icon{font-size:1.2em}
+.act-text{flex:1;font-size:.8em;color:#88aacc}
+.act-text strong{color:#fff}
+.act-time{font-size:.68em;color:#445}
+
+/* ── modal ── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);
+  z-index:100;align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--card);border:2px solid var(--gold);border-radius:18px;
+  padding:28px 24px;max-width:320px;width:90%;text-align:center;
+  box-shadow:0 0 50px rgba(255,215,0,.3);animation:bigPop .4s ease-out;
+}
+@keyframes bigPop{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.modal h2{color:var(--gold);margin-bottom:10px;font-size:1.4em}
+.modal p{color:#88aacc;font-size:.88em;margin-bottom:18px;line-height:1.5}
+.modal-close{background:linear-gradient(90deg,var(--gold),#ff9f1c);color:#000;
+  font-weight:800;padding:10px 28px;border:none;border-radius:20px;cursor:pointer;font-size:.95em;}
+.coin-spin{font-size:3em;display:block;margin-bottom:8px;animation:coinBounce .6s ease-out}
+@keyframes coinBounce{from{transform:scale(0) rotate(-180deg)}to{transform:scale(1) rotate(0)}}
+
+/* ── footer ── */
+footer{position:relative;z-index:5;text-align:center;padding:20px;
+  font-size:.72em;color:#334;border-top:1px solid #0d1a2a;}
+
+/* ── scrollbar ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:#010610}
+::-webkit-scrollbar-thumb{background:#1a2a40;border-radius:2px}
+</style>
 </head>
 <body>
-    <div class="hero">
-        <h1>Best Budget Noise Cancelling Headphones 2026</h1>
-        <p>Top picks under $150 that actually block noise well. Save money without sacrificing quality.</p>
-        <a href="YOUR_AMAZON_TOP_PICK_LINK" class="cta">Shop My #1 Pick on Amazon</a>
+
+<canvas id="bgCanvas"></canvas>
+
+<header>
+  <div class="header-inner">
+    <div class="logo-block">
+      <div class="logo-text">JUWA 2.0</div>
+      <div class="logo-sub">GAME PLATFORM</div>
     </div>
+    <div class="header-right">
+      <div class="vip-badge" id="vipBadge">🥉 BRONZE</div>
+      <div class="wallet-box" onclick="document.getElementById('walletModal').classList.add('open')">
+        <div>
+          <div class="wallet-label">BALANCE</div>
+          <div id="balanceDisplay">0</div>
+        </div>
+        <span style="color:#ffd700;font-size:1.1em">💰</span>
+      </div>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <a href="index.html" class="nav-btn active">🏠 Home</a>
+    <a href="fish.html" class="nav-btn">🐟 Fish Shoot</a>
+    <a href="slots.html" class="nav-btn">🎰 Slots</a>
+    <span class="nav-btn" style="cursor:default;opacity:.4">🎱 Keno</span>
+    <span class="nav-btn" style="cursor:default;opacity:.4">🃏 Poker</span>
+    <span class="nav-btn" style="cursor:default;opacity:.4">🎯 Bingo</span>
+  </div>
+</header>
 
-    <h2>Top Recommendations</h2>
-    <table>
-        <tr><th>Model</th><th>Price Range</th><th>Best For</th><th>Why We Like It</th><th>Link</th></tr>
-        <tr><td>Soundcore Space One</td><td>$80–$110</td><td>Overall best value</td><td>Strong ANC, 40h battery, comfortable</td><td><a href="YOUR_AMAZON_LINK">Buy on Amazon</a></td></tr>
-        <tr><td>Soundcore Life Q20i / Q30</td><td>$50–$80</td><td>Budget king</td><td>Long battery, big bass, solid noise blocking</td><td><a href="YOUR_AMAZON_LINK">Buy on Amazon</a></td></tr>
-        <tr><td>Sony WH-CH720N</td><td>$90–$130</td><td>App + sound quality</td><td>Lightweight, good ANC for commuting</td><td><a href="YOUR_AMAZON_LINK">Buy on Amazon</a></td></tr>
-        <tr><td>EarFun Wave Pro</td><td>$70–$100</td><td>Travel & gym</td><td>Impressive ANC under $100</td><td><a href="YOUR_AMAZON_LINK">Buy on Amazon</a></td></tr>
-    </table>
+<div class="ticker-bar">
+  <div class="ticker-inner" id="tickerInner"></div>
+</div>
 
-    <h2>Quick Buying Tips</h2>
-    <ul>
-        <li>Focus on ANC strength for planes/trains and battery life (40+ hours is ideal)</li>
-        <li>Over-ear models block more noise than earbuds for most people</li>
-        <li>Check return policies — try them at home</li>
-        <li>Look for current deals on Amazon (prices drop often)</li>
-    </ul>
+<!-- Streak / Claim -->
+<div class="streak-banner">
+  <div class="streak-left">
+    <div class="streak-flame">🔥</div>
+    <div class="streak-info">
+      <div><span class="streak-num" id="streakNum">1</span><span style="color:#aaa;font-size:.8em"> Day Streak</span></div>
+      <div class="streak-label">Log in daily for bonus coins!</div>
+    </div>
+  </div>
+  <div class="streak-right">
+    <div id="claimTimer" style="font-size:.72em;color:#88aacc"></div>
+    <button class="claim-btn" onclick="claimFreeCoins()" id="claimBtn">🎁 Claim Free Coins</button>
+  </div>
+</div>
 
-    <h2>Why Buy Through These Links?</h2>
-    <p>I test and compare so you don't have to. As an Amazon Associate I earn from qualifying purchases at no extra cost to you. This helps keep the guide free and updated.</p>
+<!-- Wallet cards -->
+<div class="wallet-panel">
+  <div class="wp-card">
+    <div class="wp-icon">💰</div>
+    <div class="wp-label">BALANCE</div>
+    <div class="wp-val" id="wpBalance" style="color:var(--gold)">0</div>
+    <button class="wp-btn btn-deposit" onclick="quickDeposit()">+ Add Coins</button>
+  </div>
+  <div class="wp-card">
+    <div class="wp-icon">🏆</div>
+    <div class="wp-label">TOTAL WON</div>
+    <div class="wp-val" id="wpWins" style="color:var(--green)">0</div>
+    <button class="wp-btn btn-redeem" onclick="checkRedeem()">Redeem</button>
+  </div>
+  <div class="wp-card">
+    <div class="wp-icon">⭐</div>
+    <div class="wp-label">VIP PTS</div>
+    <div class="wp-val" id="wpVip" style="color:var(--purple)">0</div>
+    <div style="font-size:.68em;color:#445;margin-top:6px" id="vipNextLabel">Next level →</div>
+  </div>
+</div>
 
-    <footer style="text-align:center; margin-top:50px; font-size:0.9em;">
-        <p>Updated May 2026 • Honest picks for real people</p>
-    </footer>
+<!-- Stats -->
+<div class="stats-bar">
+  <div class="stat-item"><div class="stat-num" id="statFish">0</div><div class="stat-label">FISH CAUGHT</div></div>
+  <div class="stat-item"><div class="stat-num" id="statSpins">0</div><div class="stat-label">SPINS</div></div>
+  <div class="stat-item"><div class="stat-num" id="statWins">0</div><div class="stat-label">WINS</div></div>
+  <div class="stat-item"><div class="stat-num" id="statStreak">1</div><div class="stat-label">STREAK</div></div>
+</div>
+
+<!-- Games -->
+<div class="section-head">🎮 Choose Your Game</div>
+
+<div class="games-grid">
+
+  <a href="fish.html" class="game-card">
+    <div class="game-thumb thumb-fish">
+      🐟<span class="game-badge badge-hot">🔥 HOT</span>
+    </div>
+    <div class="game-body">
+      <h3>🎯 Fish Shooting</h3>
+      <p>Aim, shoot, and collect coins. Four weapons including bombs and lasers!</p>
+      <div class="play-row">
+        <span class="play-tag">▶ PLAY NOW</span>
+        <span class="room-tag">4 Weapons</span>
+      </div>
+    </div>
+  </a>
+
+  <a href="fish.html?room=deep" class="game-card">
+    <div class="game-thumb thumb-fish2">
+      🦈<span class="game-badge badge-vip">⭐ VIP</span>
+    </div>
+    <div class="game-body">
+      <h3>🌊 Deep Sea Hunter</h3>
+      <p>High-stakes ocean. Mega fish and boss waves. Double rewards!</p>
+      <div class="play-row">
+        <span class="play-tag">▶ PLAY NOW</span>
+        <span class="room-tag">2× Rewards</span>
+      </div>
+    </div>
+  </a>
+
+  <a href="slots.html" class="game-card">
+    <div class="game-thumb thumb-slots">
+      🎰<span class="game-badge badge-new">✨ NEW</span>
+    </div>
+    <div class="game-body">
+      <h3>🎰 Lucky Slots</h3>
+      <p>Spin the reels! Wilds, scatters, free spins & progressive jackpot.</p>
+      <div class="play-row">
+        <span class="play-tag">▶ PLAY NOW</span>
+        <span class="room-tag">Jackpot Live</span>
+      </div>
+    </div>
+  </a>
+
+  <div class="game-card" style="cursor:default">
+    <div class="game-thumb thumb-keno">
+      🎱<span class="game-badge badge-soon">SOON</span>
+    </div>
+    <div class="game-body">
+      <h3>🎱 Dragon Keno</h3>
+      <p>Pick 10 numbers, match the dragon's draw and win big.</p>
+      <div class="play-row">
+        <span class="coming-tag">COMING SOON</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-card" style="cursor:default">
+    <div class="game-thumb thumb-coming">
+      🃏<span class="game-badge badge-soon">SOON</span>
+    </div>
+    <div class="game-body">
+      <h3>🃏 Golden Poker</h3>
+      <p>Texas Hold'em with a wild card twist. Ocean-themed poker.</p>
+      <div class="play-row">
+        <span class="coming-tag">COMING SOON</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-card" style="cursor:default">
+    <div class="game-thumb thumb-coming">
+      🐲<span class="game-badge badge-soon">SOON</span>
+    </div>
+    <div class="game-body">
+      <h3>🐲 Dragon Tiger</h3>
+      <p>Classic one-card showdown — Dragon vs. Tiger. Fast action!</p>
+      <div class="play-row">
+        <span class="coming-tag">COMING SOON</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Leaderboard -->
+<div class="section-head">🏆 Top Winners Today</div>
+<div class="leaderboard" id="leaderboard"></div>
+
+<!-- Activity Feed -->
+<div class="section-head">⚡ Live Activity</div>
+<div class="activity-feed" id="actFeed"></div>
+
+<footer>
+  <p>⚠️ FOR ENTERTAINMENT ONLY — No real money involved. Demo platform.</p>
+  <p style="margin-top:5px;color:#223">JUWA 2.0 Demo © Free to Play</p>
+</footer>
+
+<!-- Modals -->
+<div class="modal-overlay" id="coinModal">
+  <div class="modal">
+    <span class="coin-spin">💰</span>
+    <h2 id="coinModalTitle">+500 Coins Added!</h2>
+    <p id="coinModalMsg">Your daily free coins have been added. Come back tomorrow for your streak bonus!</p>
+    <button class="modal-close" onclick="document.getElementById('coinModal').classList.remove('open')">AWESOME!</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="walletModal">
+  <div class="modal">
+    <span style="font-size:2.5em;display:block;margin-bottom:8px">💼</span>
+    <h2>Your Wallet</h2>
+    <p>Balance: <strong style="color:var(--gold)" id="wm-balance">0</strong> coins<br><br>
+    This is a fun demo platform — all coins are virtual and for entertainment only.</p>
+    <button class="modal-close" onclick="document.getElementById('walletModal').classList.remove('open')">CLOSE</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="redeemModal">
+  <div class="modal">
+    <span style="font-size:2.5em;display:block;margin-bottom:8px">🎁</span>
+    <h2>Redeem Points</h2>
+    <p>You have <strong style="color:var(--green)" id="rm-wins">0</strong> wins recorded.<br><br>
+    This is a demo platform — coins and wins are for entertainment only and cannot be redeemed for real prizes.</p>
+    <button class="modal-close" onclick="document.getElementById('redeemModal').classList.remove('open')">GOT IT</button>
+  </div>
+</div>
+
+<script>
+// ══════════ STORAGE ══════════
+const ST={
+  credits:'juwa_credits',fish:'juwa_fish',wins:'juwa_wins',spins:'juwa_spins',
+  streak:'juwa_streak',lastVisit:'juwa_last_visit',lastClaim:'juwa_claim',
+  vipPts:'juwa_vip_pts',totalEarned:'juwa_total_earned'
+};
+const get=k=>parseInt(localStorage.getItem(k)||0);
+const set=(k,v)=>localStorage.setItem(k,v);
+
+// ══════════ VIP LEVELS ══════════
+const VIP=[
+  {name:'Bronze', pts:0,    color:'#cd7f32',bg:'rgba(205,127,50,.15)',icon:'🥉'},
+  {name:'Silver', pts:500,  color:'#c0c0c0',bg:'rgba(192,192,192,.15)',icon:'🥈'},
+  {name:'Gold',   pts:2000, color:'#ffd700',bg:'rgba(255,215,0,.15)',  icon:'🥇'},
+  {name:'Plat',   pts:6000, color:'#e5f0ff',bg:'rgba(180,220,255,.15)',icon:'💎'},
+  {name:'Diamond',pts:15000,color:'#b9f2ff',bg:'rgba(185,242,255,.15)',icon:'🔮'},
+];
+function getVIP(pts){
+  for(let i=VIP.length-1;i>=0;i--) if(pts>=VIP[i].pts) return {lvl:VIP[i],next:VIP[i+1]||null,idx:i};
+  return {lvl:VIP[0],next:VIP[1],idx:0};
+}
+
+// ══════════ STREAK ══════════
+function calcStreak(){
+  const today=new Date().toDateString();
+  const last=localStorage.getItem(ST.lastVisit);
+  let streak=get(ST.streak)||1;
+  if(!last){
+    set(ST.lastVisit,today);set(ST.streak,1);return 1;
+  }
+  if(last===today) return streak;
+  const diff=Math.round((new Date()-new Date(last))/(1000*60*60*24));
+  if(diff===1){streak++;} else {streak=1;}
+  set(ST.streak,streak);set(ST.lastVisit,today);
+  return streak;
+}
+
+// ══════════ FREE COINS ══════════
+function claimFreeCoins(){
+  const last=get(ST.lastClaim);
+  const now=Date.now();
+  const cooldown=30*60*1000;
+  if(now-last<cooldown){ updateTimer(); return; }
+  const streak=get(ST.streak)||1;
+  const bonus=Math.min(streak*100,500)+400; // streak bonus: 500-900 coins
+  const cur=get(ST.credits)||1000;
+  set(ST.credits,cur+bonus);
+  set(ST.lastClaim,now);
+  // add VIP points
+  set(ST.vipPts,get(ST.vipPts)+50);
+  document.getElementById('coinModalTitle').textContent=`+${bonus} Coins!`;
+  document.getElementById('coinModalMsg').textContent=`Day ${streak} streak bonus! Come back tomorrow for ${Math.min((streak+1)*100,500)+400} coins!`;
+  document.getElementById('coinModal').classList.add('open');
+  updateAll();
+  addActivity('💰',`You claimed <strong>${bonus} coins</strong>!`,'just now');
+}
+
+function updateTimer(){
+  const last=get(ST.lastClaim);
+  const rem=30*60*1000-(Date.now()-last);
+  const btn=document.getElementById('claimBtn');
+  if(rem<=0){
+    document.getElementById('claimTimer').textContent='';
+    btn.disabled=false;btn.textContent='🎁 Claim Free Coins';
+  } else {
+    const m=Math.floor(rem/60000),s=Math.floor((rem%60000)/1000);
+    document.getElementById('claimTimer').textContent=`Next in ${m}:${s.toString().padStart(2,'0')}`;
+    btn.disabled=true;btn.textContent='Come back later';
+  }
+}
+setInterval(updateTimer,1000);
+
+// ══════════ QUICK ACTIONS ══════════
+function quickDeposit(){
+  const cur=get(ST.credits)||1000;
+  set(ST.credits,cur+200);
+  set(ST.vipPts,get(ST.vipPts)+10);
+  document.getElementById('coinModalTitle').textContent='+200 Coins!';
+  document.getElementById('coinModalMsg').textContent='200 bonus coins added to your balance. Enjoy!';
+  document.getElementById('coinModal').classList.add('open');
+  updateAll();
+}
+
+function checkRedeem(){
+  document.getElementById('rm-wins').textContent=get(ST.wins).toLocaleString();
+  document.getElementById('redeemModal').classList.add('open');
+}
+
+// ══════════ UPDATE ALL ══════════
+function updateAll(){
+  const bal=get(ST.credits)||1000;
+  const vipPts=get(ST.vipPts);
+  const {lvl,next}=getVIP(vipPts);
+  const streak=get(ST.streak)||1;
+
+  document.getElementById('balanceDisplay').textContent=bal.toLocaleString();
+  document.getElementById('wpBalance').textContent=bal.toLocaleString();
+  document.getElementById('wpWins').textContent=get(ST.wins).toLocaleString();
+  document.getElementById('wpVip').textContent=vipPts.toLocaleString();
+  document.getElementById('statFish').textContent=get(ST.fish).toLocaleString();
+  document.getElementById('statSpins').textContent=get(ST.spins).toLocaleString();
+  document.getElementById('statWins').textContent=get(ST.wins).toLocaleString();
+  document.getElementById('statStreak').textContent=streak;
+  document.getElementById('streakNum').textContent=streak;
+
+  const badge=document.getElementById('vipBadge');
+  badge.textContent=`${lvl.icon} ${lvl.name}`;
+  badge.style.borderColor=lvl.color;
+  badge.style.color=lvl.color;
+  badge.style.background=lvl.bg;
+
+  const nextLabel=next?`${next.pts-vipPts} pts to ${next.icon} ${next.name}`:'MAX RANK';
+  document.getElementById('vipNextLabel').textContent=nextLabel;
+  document.getElementById('wm-balance').textContent=bal.toLocaleString();
+
+  // Count-up animation on stats
+  animCount('statFish',get(ST.fish));
+  animCount('statSpins',get(ST.spins));
+  animCount('statWins',get(ST.wins));
+  updateTimer();
+}
+
+function animCount(id,target){
+  let cur=0;const el=document.getElementById(id);const step=Math.ceil(target/30);
+  const iv=setInterval(()=>{ cur=Math.min(cur+step,target);el.textContent=cur.toLocaleString();if(cur>=target)clearInterval(iv); },30);
+}
+
+// ══════════ LEADERBOARD (generated) ══════════
+const LB_NAMES=['OceanKing','FishLord99','DeepSea_Pro','AquaHunter','WaveRider','SharkSlayer','GoldFish88','BossCrusher','TridentPro','CannonKing'];
+const LB_GAMES=['Fish Shooting','Lucky Slots','Fish Shooting','Deep Sea Hunter','Lucky Slots','Fish Shooting','Lucky Slots','Deep Sea Hunter','Fish Shooting','Lucky Slots'];
+const LB_WINS=[8420,7290,6180,5500,4900,4120,3800,3200,2700,2100];
+function buildLeaderboard(){
+  const base=get(ST.wins)*120;
+  const rows=LB_WINS.map((w,i)=>({name:LB_NAMES[i],game:LB_GAMES[i],win:w+Math.floor(base*Math.random()*.3)}));
+  const myScore=base;
+  if(myScore>0) rows.push({name:'⭐ YOU',game:'Session',win:myScore,isMe:true});
+  rows.sort((a,b)=>b.win-a.win);
+  const top=rows.slice(0,8);
+  const rankStyle=['gold','silver','bronze'];
+  document.getElementById('leaderboard').innerHTML=top.map((r,i)=>`
+    <div class="lb-row" style="${r.isMe?'border-color:var(--cyan);background:rgba(0,212,255,.06)':''}">
+      <div class="lb-rank ${rankStyle[i]||''}">${i+1}</div>
+      <div>
+        <div class="lb-name">${r.name}</div>
+        <div class="lb-game">${r.game}</div>
+      </div>
+      <div class="lb-win">+${r.win.toLocaleString()}</div>
+    </div>`).join('');
+}
+
+// ══════════ ACTIVITY FEED ══════════
+const ACT_FEED=[];
+const ACT_TEMPLATES=[
+  ['🐟','<strong>TidalWave</strong> caught a Dragon Fish for <strong>185 coins</strong>'],
+  ['🎰','<strong>LuckyJack</strong> hit Triple 7s — Jackpot! <strong>+8,400 coins</strong>'],
+  ['🦈','<strong>SharkHunter</strong> destroyed the Boss Crab for <strong>420 coins</strong>'],
+  ['⭐','<strong>StarPlayer</strong> unlocked <strong>Gold VIP</strong> status'],
+  ['🎯','<strong>AimBot_Pro</strong> built a x5 COMBO and scored <strong>1,200 coins</strong>'],
+  ['💎','<strong>DiamondKing</strong> collected 3 Scatters — 10 Free Spins!'],
+  ['🔥','<strong>ComboMaster</strong> hit a 8x combo chain in Fish Shooting'],
+  ['💣','<strong>BombSquad</strong> blew up 6 fish with one Bomb for <strong>660 coins</strong>'],
+  ['🌟','<strong>WildCard99</strong> landed Triple Wild on Lucky Slots — <strong>×150!</strong>'],
+  ['🎏','<strong>GoldenFish</strong> caught the rare Golden Koi for <strong>142 coins</strong>'],
+];
+const TIMES=['just now','1m ago','2m ago','3m ago','5m ago'];
+
+function buildActivityFeed(){
+  const feed=document.getElementById('actFeed');
+  const items=ACT_TEMPLATES.slice(0,6);
+  feed.innerHTML=items.map((a,i)=>`
+    <div class="act-item">
+      <div class="act-icon">${a[0]}</div>
+      <div class="act-text">${a[1]}</div>
+      <div class="act-time">${TIMES[i%TIMES.length]}</div>
+    </div>`).join('');
+}
+
+function addActivity(icon,text,time){
+  const feed=document.getElementById('actFeed');
+  const div=document.createElement('div');
+  div.className='act-item';
+  div.innerHTML=`<div class="act-icon">${icon}</div><div class="act-text">${text}</div><div class="act-time">${time||'just now'}</div>`;
+  feed.insertBefore(div,feed.firstChild);
+  if(feed.children.length>8) feed.removeChild(feed.lastChild);
+}
+
+// Periodically add fake activity
+const FAKE_ACT=[
+  ['🐠',`<strong>Player${Math.floor(Math.random()*9000+1000)}</strong> caught a Clown Fish for <strong>${Math.floor(Math.random()*12+5)} coins</strong>`],
+  ['🎰',`<strong>User${Math.floor(Math.random()*9000+1000)}</strong> spun the slots and won <strong>${Math.floor(Math.random()*200+20)} coins</strong>`],
+  ['🐢',`<strong>Ocean${Math.floor(Math.random()*9000+1000)}</strong> hit a Sea Turtle for <strong>${Math.floor(Math.random()*40+20)} coins</strong>`],
+];
+setInterval(()=>{
+  const t=FAKE_ACT[Math.floor(Math.random()*FAKE_ACT.length)];
+  addActivity(t[0],t[1].replace(/\d{4}/g,()=>Math.floor(Math.random()*9000+1000)),'just now');
+},7000);
+
+// ══════════ TICKER ══════════
+const TICKS=[
+  ['🐟','OceanKing','caught a Boss Crab','and won 520 coins'],
+  ['🎰','LuckyJack','hit Triple 7s','on Lucky Slots'],
+  ['🐉','DragonSlayer','defeated the Gold Dragon','for 180 coins'],
+  ['⭐','StarPlayer','unlocked Gold VIP','status'],
+  ['💣','BombKing','blasted 7 fish','with one bomb'],
+  ['🎏','GoldenRod','caught the Golden Koi','for 142 coins'],
+  ['🌟','WildCard','landed 3 wilds','for ×150 payout'],
+  ['💠','FreeSpinFan','triggered 10 Free Spins','on Lucky Slots'],
+];
+function buildTicker(){
+  const all=[...TICKS,...TICKS];
+  document.getElementById('tickerInner').innerHTML=all.map(t=>
+    `<span class="ticker-item">🏆 <em>${t[0]} ${t[1]}</em> ${t[2]} — <em style="color:var(--cyan)">${t[3]}</em></span>`
+  ).join('');
+}
+
+// ══════════ BG CANVAS (bubbles + fish) ══════════
+const canvas=document.getElementById('bgCanvas');
+const ctx=canvas.getContext('2d');
+function resize(){ canvas.width=innerWidth;canvas.height=innerHeight; }
+window.addEventListener('resize',resize);resize();
+
+const bubbles=Array.from({length:45},()=>({
+  x:Math.random(),y:Math.random(),r:Math.random()*3.5+.8,
+  spd:Math.random()*.5+.15,op:Math.random()*.2+.04
+}));
+
+const bgFish=Array.from({length:7},()=>({
+  x:Math.random()*2-0.5,
+  y:.15+Math.random()*.75,
+  vx:(.4+Math.random()*.6)*(Math.random()<.5?1:-1),
+  size:Math.random()*22+14,
+  emoji:['🐟','🐠','🐡','🦈','🐢','🐉','🦀'][Math.floor(Math.random()*7)],
+  wobble:Math.random()*Math.PI*2,
+  op:Math.random()*.3+.08
+}));
+
+function drawBG(){
+  const g=ctx.createLinearGradient(0,0,0,canvas.height);
+  g.addColorStop(0,'#030b1a');g.addColorStop(1,'#000d10');
+  ctx.fillStyle=g;ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // Light rays
+  for(let i=0;i<5;i++){
+    const rx=canvas.width*(0.1+i*.2)+Math.sin(Date.now()/3200+i)*40;
+    const rg=ctx.createLinearGradient(rx,0,rx+60,canvas.height*.7);
+    rg.addColorStop(0,'rgba(0,212,255,.04)');rg.addColorStop(1,'transparent');
+    ctx.beginPath();ctx.moveTo(rx-20,0);ctx.lineTo(rx+20,0);
+    ctx.lineTo(rx+70,canvas.height*.7);ctx.lineTo(rx-10,canvas.height*.7);
+    ctx.fillStyle=rg;ctx.fill();
+  }
+
+  // Bubbles
+  bubbles.forEach(b=>{
+    b.y-=b.spd/65;if(b.y<0){b.y=1;b.x=Math.random()}
+    ctx.beginPath();ctx.arc(b.x*canvas.width,b.y*canvas.height,b.r,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(0,212,255,${b.op})`;ctx.lineWidth=1;ctx.stroke();
+  });
+
+  // Fish
+  bgFish.forEach(f=>{
+    f.x+=f.vx/65;
+    f.wobble+=.04;
+    const fy=f.y+Math.sin(f.wobble)*.015;
+    if(f.vx>0&&f.x>1.1){f.x=-.1;f.y=.15+Math.random()*.75;f.emoji=['🐟','🐠','🐡','🦈','🐢'][Math.floor(Math.random()*5)];}
+    if(f.vx<0&&f.x<-.1){f.x=1.1;f.y=.15+Math.random()*.75;}
+    ctx.save();ctx.globalAlpha=f.op;
+    const px=f.x*canvas.width,py=fy*canvas.height;
+    if(f.vx<0){ctx.scale(-1,1);ctx.translate(-canvas.width,0);}
+    ctx.font=`${f.size}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(f.emoji,f.vx<0?canvas.width-px:px,py);
+    ctx.restore();
+  });
+
+  requestAnimationFrame(drawBG);
+}
+drawBG();
+
+// ══════════ INIT ══════════
+if(!localStorage.getItem(ST.credits)) set(ST.credits,1000);
+calcStreak();
+updateAll();
+buildLeaderboard();
+buildActivityFeed();
+buildTicker();
+setTimeout(()=>{ updateAll(); }, 0); // allow DOM paint
+</script>
 </body>
 </html>
