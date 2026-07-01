@@ -93,6 +93,12 @@ body{background:#020d1a;color:#fff;font-family:'Segoe UI',Arial,sans-serif;
   transition:opacity .25s;
 }
 
+/* ── Room badge ── */
+#roomBadge{
+  font-size:.72em;font-weight:700;letter-spacing:1.2px;padding:4px 12px;
+  border-radius:20px;border:1.5px solid currentColor;white-space:nowrap;
+}
+
 /* ── Sound toggle ── */
 #soundToggle{position:absolute;top:8px;right:10px;font-size:1.1em;cursor:pointer;
   background:rgba(0,0,0,.4);border:1px solid #334;border-radius:8px;padding:2px 7px;
@@ -108,6 +114,7 @@ body{background:#020d1a;color:#fff;font-family:'Segoe UI',Arial,sans-serif;
   <div class="hud-stat"><div class="hud-label">LEVEL</div><div class="hud-val" id="levelVal">1</div></div>
   <div class="hud-stat"><div class="hud-label">COMBO</div><div class="hud-val" id="comboVal">—</div></div>
   <div class="hud-stat"><div class="hud-label">SHOT</div><div class="hud-val" id="ammoVal">1💰</div></div>
+  <div id="roomBadge" style="color:#00d4ff">🎮 NORMAL</div>
   <button class="hud-btn" id="pauseBtn" onclick="togglePause()">⏸</button>
 </div>
 
@@ -123,8 +130,9 @@ body{background:#020d1a;color:#fff;font-family:'Segoe UI',Arial,sans-serif;
   <div class="weapon-bar">
     <button class="weapon-btn active" onclick="setWeapon(0)" id="wb0">🟡 BASIC ×1</button>
     <button class="weapon-btn" onclick="setWeapon(1)" id="wb1">🟠 POWER ×3</button>
-    <button class="weapon-btn" onclick="setWeapon(2)" id="wb2">⚡ LASER ×5</button>
+    <button class="weapon-btn" onclick="setWeapon(2)" id="wb2">🔴 LASER ×5</button>
     <button class="weapon-btn" onclick="setWeapon(3)" id="wb3">💣 BOMB ×10</button>
+    <button class="weapon-btn" onclick="setWeapon(4)" id="wb4">⚡ ELEC ×15</button>
   </div>
 
   <div id="bigMsg"></div>
@@ -133,12 +141,15 @@ body{background:#020d1a;color:#fff;font-family:'Segoe UI',Arial,sans-serif;
     <h2>🌊 FISH SHOOTING</h2>
     <p>
       Click/tap to shoot • Hold to auto-fire<br>
-      Keys 1-4 switch weapons<br><br>
-      🟡 Basic x1 → normal shot<br>
-      🟠 Power x3 → AOE on impact<br>
-      ⚡ Laser x5 → pierces all fish<br>
-      💣 Bomb x10 → huge explosion<br><br>
-      Kill fast to build COMBO (up to x5 bonus)!
+      Keys 1-5 switch weapons<br><br>
+      🟡 Basic ×1 → normal shot<br>
+      🟠 Power ×3 → AOE on impact<br>
+      🔴 Laser ×5 → pierces all fish<br>
+      💣 Bomb ×10 → huge explosion<br>
+      ⚡ Elec ×15 → chain lightning (5 fish!)<br><br>
+      🎁 Treasure chests drift by — shoot them for bonus coins!<br>
+      ❄️ Kill a jellyfish to freeze all fish for 3 seconds!<br><br>
+      Kill fast to build COMBO (up to ×5 bonus)!
     </p>
     <button class="big-btn" onclick="startGame()">▶ START GAME</button>
   </div>
@@ -165,6 +176,11 @@ const getC=()=>parseInt(localStorage.getItem(ST.credits)||1000);
 const setC=v=>{ localStorage.setItem(ST.credits,v); document.getElementById('coinsVal').textContent=v.toLocaleString(); };
 const addFish=()=>{ localStorage.setItem(ST.fish,(parseInt(localStorage.getItem(ST.fish)||0))+1) };
 const addWin=()=>{ localStorage.setItem(ST.wins,(parseInt(localStorage.getItem(ST.wins)||0))+1) };
+
+// ══════════ ROOM MODE ══════════
+const DEEP_MODE=new URLSearchParams(location.search).get('room')==='deep';
+const ROOM_MULTI=DEEP_MODE?2:1;
+if(DEEP_MODE) document.title='Deep Sea Hunter – JUWA 2.0';
 
 // ══════════ AUDIO ══════════
 let soundOn=true;
@@ -201,14 +217,17 @@ const sndLaser=()=>beep(1400,0.14,'sawtooth',0.14,350);
 const sndCoin=()=>{ beep(880,0.04,'sine',0.12); setTimeout(()=>beep(1100,0.05,'sine',0.1),40) };
 const sndLevel=()=>{ [440,550,660,880].forEach((f,i)=>setTimeout(()=>beep(f,0.1,'sine',0.18),i*80)) };
 const sndBossWarn=()=>{ [110,90,70,50].forEach((f,i)=>setTimeout(()=>beep(f,0.22,'sawtooth',0.28),i*120)) };
+const sndElec=()=>{ beep(1800,0.06,'sawtooth',0.16,900); setTimeout(()=>beep(1200,0.08,'sawtooth',0.12,600),60) };
+const sndFreeze=()=>{ beep(440,0.06,'sine',0.1,880); setTimeout(()=>beep(660,0.12,'sine',0.14,1200),80) };
+const sndChest=()=>{ [880,1100,1320].forEach((f,i)=>setTimeout(()=>beep(f,0.1,'sine',0.22),i*70)) };
 function toggleSound(){ soundOn=!soundOn; document.getElementById('soundToggle').textContent=soundOn?'🔊':'🔇' }
 
 // ══════════ STATE ══════════
 let gameRunning=false,gamePaused=false;
-let score=0,level=1,fishThisWave=0,waveGoal=10,spawnInterval=1600;
+let score=0,level=1,fishThisWave=0,waveGoal=10,spawnInterval=DEEP_MODE?1100:1600;
 let weaponIdx=0;
-const W_COST=[1,3,5,10];
-const W_DMG =[1,3,5,8];
+const W_COST=[1,3,5,10,15];
+const W_DMG =[1,3,5,8,6];
 
 // Combo
 let combo=0,comboTimer=null,lastKillTime=0;
@@ -218,9 +237,19 @@ const COMBO_WIN=2400;
 let shakeX=0,shakeY=0,shakePow=0;
 function shake(p){ shakePow=Math.max(shakePow,p) }
 
+// Freeze
+let freezeUntil=0;
+function freezeAll(){
+  freezeUntil=Date.now()+3000;
+  sndFreeze();
+  flashBig('❄️ FREEZE! 3 SECONDS','#00d4ff');
+  burst(W/2,H/2,['#00d4ff','#88ccff','#fff','#aaeeff'],30,7);
+}
+
 // Entities
-let fishes=[],bullets=[],lasers=[],explosions=[],particles=[];
+let fishes=[],bullets=[],lasers=[],chains=[],explosions=[],particles=[],chests=[];
 let activeBoss=null;
+let lastChestSpawn=0;
 
 // Canvas
 const canvas=document.getElementById('gameCanvas');
@@ -234,14 +263,16 @@ window.addEventListener('resize',resize); resize();
 
 // ══════════ FISH TYPES ══════════
 const FISH_TYPES=[
-  {name:'Blue Fish',   emoji:'🐟',hp:1, spd:2.6,reward:[2,5],  w:34,h:26,prob:32,special:null},
-  {name:'Clown Fish',  emoji:'🐠',hp:2, spd:2.1,reward:[5,12], w:40,h:32,prob:24,special:null},
-  {name:'Puffer',      emoji:'🐡',hp:4, spd:1.5,reward:[12,22],w:48,h:38,prob:17,special:null},
-  {name:'Sea Turtle',  emoji:'🐢',hp:7, spd:1.1,reward:[24,40],w:56,h:44,prob:12,special:null},
-  {name:'Shark',       emoji:'🦈',hp:14,spd:1.9,reward:[45,80],w:70,h:46,prob:8, special:null},
-  {name:'Golden Koi',  emoji:'🎏',hp:4, spd:1.4,reward:[80,180],w:60,h:48,prob:2,special:'golden'},
+  {name:'Blue Fish',   emoji:'🐟',hp:1, spd:2.6,reward:[2,5],   w:34,h:26,prob:28,special:null},
+  {name:'Clown Fish',  emoji:'🐠',hp:2, spd:2.1,reward:[5,12],  w:40,h:32,prob:20,special:null},
+  {name:'Puffer',      emoji:'🐡',hp:4, spd:1.5,reward:[12,22], w:48,h:38,prob:15,special:null},
+  {name:'Sea Turtle',  emoji:'🐢',hp:7, spd:1.1,reward:[24,40], w:56,h:44,prob:11,special:null},
+  {name:'Shark',       emoji:'🦈',hp:14,spd:1.9,reward:[45,80], w:70,h:46,prob:7, special:null},
+  {name:'Golden Koi',  emoji:'🎏',hp:4, spd:1.4,reward:[80,180],w:60,h:48,prob:2, special:'golden'},
   {name:'Dragon',      emoji:'🐉',hp:36,spd:0.7,reward:[120,200],w:90,h:62,prob:3,special:'boss'},
   {name:'Boss Crab',   emoji:'🦀',hp:70,spd:0.5,reward:[300,550],w:110,h:82,prob:2,special:'boss'},
+  {name:'Jellyfish',   emoji:'🪼',hp:2, spd:1.0,reward:[10,25], w:42,h:42,prob:7, special:'freeze'},
+  {name:'Octopus',     emoji:'🐙',hp:9, spd:0.9,reward:[32,60], w:55,h:50,prob:5, special:null},
 ];
 
 function pickFishType(){
@@ -288,7 +319,8 @@ class Fish{
   constructor(){
     const t=pickFishType();
     this.type=t;
-    this.hp=t.hp;this.maxHp=t.hp;
+    const hpBoost=DEEP_MODE&&t.special!=='boss'?Math.ceil(t.hp*0.5):0;
+    this.hp=t.hp+hpBoost;this.maxHp=t.hp+hpBoost;
     this.w=t.w;this.h=t.h;
     this.dir=Math.random()<.5?1:-1;
     this.x=this.dir>0?-this.w-10:W+this.w+10;
@@ -311,15 +343,18 @@ class Fish{
     if(t.special==='golden') flashBig('✨ GOLDEN FISH!','#ffd700');
   }
   update(){
-    this.x+=this.spd;
-    this.wobble+=0.08;
-    this.y+=Math.sin(this.wobble)*0.5+this.vy*0.1;
-    if(this.type.special==='boss'){
-      this.bossOsc+=0.03;
-      this.y+=Math.sin(this.bossOsc)*0.8;
+    const frozen=Date.now()<freezeUntil;
+    if(!frozen){
+      this.x+=this.spd;
+      this.wobble+=0.08;
+      this.y+=Math.sin(this.wobble)*0.5+this.vy*0.1;
+      if(this.type.special==='boss'){
+        this.bossOsc+=0.03;
+        this.y+=Math.sin(this.bossOsc)*0.8;
+      }
+      if(this.y<30) this.vy=Math.abs(this.vy);
+      if(this.y>H*0.86) this.vy=-Math.abs(this.vy);
     }
-    if(this.y<30) this.vy=Math.abs(this.vy);
-    if(this.y>H*0.86) this.vy=-Math.abs(this.vy);
     if(this.hitFlash>0) this.hitFlash-=.12;
     if(this.type.special==='golden') this.goldAnim+=0.1;
     if(this===activeBoss){
@@ -369,7 +404,7 @@ class Fish{
   onDeath(){
     const combo_m=getComboMult();
     const base=Math.floor(rand(this.type.reward[0],this.type.reward[1]));
-    const earned=Math.floor(base*combo_m);
+    const earned=Math.floor(base*combo_m*ROOM_MULTI);
     setC(getC()+earned);
     score+=earned;
     addFish();addWin();
@@ -394,6 +429,7 @@ class Fish{
     showKillPopup(this.x,this.y,label,this.type.emoji);
     document.getElementById('scoreVal').textContent=score.toLocaleString();
     addCombo();
+    if(this.type.special==='freeze') freezeAll();
   }
 }
 
@@ -572,6 +608,127 @@ class PowerAOE{
   }
 }
 
+// ══════════ ELECTRIC CHAIN ══════════
+class ElectricChain{
+  constructor(cx,cy,tx,ty,dmg){
+    this.segs=[];this.life=1;this.dead=false;
+    sndElec();
+    // Find nearest fish to the click point
+    let cur=null,bd=Infinity;
+    fishes.forEach(f=>{
+      if(f.dead)return;
+      const d=Math.hypot(f.x-tx,f.y-ty);
+      if(d<140&&d<bd){bd=d;cur=f;}
+    });
+    if(!cur){
+      // No nearby fish — arc to click point only
+      this.segs.push({x1:cx,y1:cy,x2:tx,y2:ty});
+      return;
+    }
+    let fromX=cx,fromY=cy;
+    let curDmg=dmg;
+    const hitSet=new Set();
+    for(let i=0;i<5&&cur;i++){
+      if(hitSet.has(cur))break;
+      hitSet.add(cur);
+      this.segs.push({x1:fromX,y1:fromY,x2:cur.x,y2:cur.y});
+      burst(cur.x,cur.y,['#00ffff','#44aaff','#fff'],8,5);
+      const killed=cur.hit(Math.max(1,Math.round(curDmg)));
+      fromX=cur.x;fromY=cur.y;
+      const prevFish=cur;
+      if(killed){cur.onDeath();fishes=fishes.filter(x=>x!==prevFish);}
+      curDmg*=0.7;
+      if(curDmg<1)break;
+      // Find next nearest unvisited fish within chain range
+      let next=null,nd=Infinity;
+      fishes.forEach(f=>{
+        if(f.dead||hitSet.has(f))return;
+        const d=Math.hypot(f.x-fromX,f.y-fromY);
+        if(d<170&&d<nd){nd=d;next=f;}
+      });
+      cur=next;
+    }
+    shake(5);
+  }
+  update(){ this.life-=0.07; if(this.life<=0)this.dead=true; }
+  draw(){
+    if(!this.segs.length)return;
+    ctx.save();
+    this.segs.forEach(s=>{
+      const dx=s.x2-s.x1,dy=s.y2-s.y1;
+      // Two jitter midpoints for zigzag
+      const jx1=s.x1+dx*.3+(Math.random()-.5)*26,jy1=s.y1+dy*.3+(Math.random()-.5)*26;
+      const jx2=s.x1+dx*.65+(Math.random()-.5)*26,jy2=s.y1+dy*.65+(Math.random()-.5)*26;
+      // Outer glow
+      ctx.globalAlpha=this.life*.4;
+      ctx.strokeStyle='rgba(0,220,255,.5)';ctx.lineWidth=9;ctx.shadowBlur=0;
+      ctx.beginPath();ctx.moveTo(s.x1,s.y1);ctx.lineTo(s.x2,s.y2);ctx.stroke();
+      // Core bolt
+      ctx.globalAlpha=this.life;
+      ctx.strokeStyle='#00ffff';ctx.lineWidth=2.5;
+      ctx.shadowBlur=18;ctx.shadowColor='#00ffff';
+      ctx.beginPath();ctx.moveTo(s.x1,s.y1);ctx.lineTo(jx1,jy1);ctx.lineTo(jx2,jy2);ctx.lineTo(s.x2,s.y2);ctx.stroke();
+      // White core
+      ctx.globalAlpha=this.life*.8;ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.shadowBlur=0;
+      ctx.beginPath();ctx.moveTo(s.x1,s.y1);ctx.lineTo(jx1,jy1);ctx.lineTo(jx2,jy2);ctx.lineTo(s.x2,s.y2);ctx.stroke();
+    });
+    ctx.restore();
+  }
+}
+
+// ══════════ TREASURE CHEST ══════════
+class TreasureChest{
+  constructor(){
+    this.fromLeft=Math.random()<.5;
+    this.x=this.fromLeft?-50:W+50;
+    this.vx=this.fromLeft?rand(0.6,1.3):-rand(0.6,1.3);
+    this.y=rand(H*.12,H*.72);
+    this.hp=3;this.maxHp=3;
+    this.dead=false;this.hitFlash=0;
+    this.bob=Math.random()*Math.PI*2;
+  }
+  update(){
+    this.x+=this.vx;
+    this.bob+=0.04;
+    this.y+=Math.sin(this.bob)*0.5;
+    if(this.hitFlash>0)this.hitFlash-=.14;
+    if(this.offScreen())this.dead=true;
+  }
+  offScreen(){ return this.x<-70||this.x>W+70 }
+  draw(){
+    const glow=16+Math.sin(Date.now()/350)*8;
+    ctx.save();
+    ctx.shadowBlur=glow;ctx.shadowColor='#ffd700';
+    if(this.hitFlash>0) ctx.globalAlpha=0.45+this.hitFlash*0.55;
+    ctx.font='46px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('🎁',this.x,this.y);
+    if(this.hp<this.maxHp){
+      const bw=52,bh=5,bx=this.x-bw/2,by=this.y-34;
+      ctx.globalAlpha=1;ctx.shadowBlur=0;
+      ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(bx,by,bw,bh);
+      ctx.fillStyle='#ffd700';ctx.fillRect(bx,by,bw*this.hp/this.maxHp,bh);
+    }
+    ctx.restore();
+  }
+  hit(dmg){
+    this.hp-=dmg;this.hitFlash=1;
+    sndHit();
+    burst(this.x,this.y,['#ffd700','#fff'],8,4);
+    if(this.hp<=0){this.dead=true;return true;}
+    return false;
+  }
+  onDeath(){
+    const reward=Math.floor(rand(50,200))*ROOM_MULTI;
+    setC(getC()+reward);
+    score+=reward;
+    document.getElementById('scoreVal').textContent=score.toLocaleString();
+    burst(this.x,this.y,['#ffd700','#ffaa00','#fff','#ff9f1c','#ffe066'],50,10);
+    shake(9);sndChest();
+    flashBig(`💰 TREASURE! +${reward}`,'#ffd700');
+    showKillPopup(this.x,this.y,`+${reward} 💰`,'🎁');
+  }
+}
+
 // ══════════ COMBO ══════════
 function addCombo(){
   const now=Date.now();
@@ -661,12 +818,14 @@ function shoot(){
     lasers.push(new Laser(CX(),CY(),tx,ty,W_DMG[2]));
   } else if(weaponIdx===3){
     bullets.push(new BombBullet(CX(),CY(),tx,ty,W_DMG[3]));
+  } else if(weaponIdx===4){
+    chains.push(new ElectricChain(CX(),CY(),tx,ty,W_DMG[4]));
   } else {
     bullets.push(new Bullet(CX(),CY(),tx,ty,W_DMG[weaponIdx],weaponIdx));
   }
 }
 
-const CANNON_COLORS=['#ffd700','#ff9f1c','#ff00ff','#a855f7'];
+const CANNON_COLORS=['#ffd700','#ff9f1c','#ff00ff','#a855f7','#00ffff'];
 function drawCannon(){
   const cx=CX(),cy=CY();
   ctx.save();ctx.translate(cx,cy);ctx.rotate(cannonAngle-Math.PI/2);
@@ -716,11 +875,41 @@ function gameLoop(ts){
 
   drawBackground();
 
+  // Deep Sea room tint
+  if(DEEP_MODE){
+    ctx.save();ctx.globalAlpha=0.12;
+    ctx.fillStyle='#002244';ctx.fillRect(0,0,W,H);
+    ctx.restore();
+  }
+
+  // Freeze overlay
+  const frozen=Date.now()<freezeUntil;
+  if(frozen){
+    ctx.save();ctx.globalAlpha=0.18;
+    ctx.fillStyle='#00aaff';ctx.fillRect(0,0,W,H);
+    ctx.restore();
+    // Ice crystal sparkles
+    if(Math.random()<0.25){
+      burst(Math.random()*W,Math.random()*H,['#00d4ff','#88ccff','#fff'],3,2);
+    }
+  }
+
   // Spawn fish
   if(ts-lastSpawn>spawnInterval){
     fishes.push(new Fish());lastSpawn=ts;
     fishThisWave++;if(fishThisWave>=waveGoal)levelUp();
   }
+
+  // Spawn treasure chest every 30s
+  if(ts-lastChestSpawn>30000&&lastChestSpawn>0){
+    chests.push(new TreasureChest());lastChestSpawn=ts;
+  }
+  if(lastChestSpawn===0)lastChestSpawn=ts; // don't spawn immediately on start
+
+  // Treasure chests
+  chests.forEach(c=>c.update());
+  chests=chests.filter(c=>!c.dead);
+  chests.forEach(c=>c.draw());
 
   // Fish
   fishes.forEach(f=>f.update());
@@ -747,6 +936,33 @@ function gameLoop(ts){
     }
   });
 
+  // Bullet ↔ Chest collision
+  bullets.forEach(b=>{
+    if(b.dead||b instanceof BombBullet)return;
+    for(const c of chests){
+      if(c.dead)continue;
+      if(Math.hypot(b.x-c.x,b.y-c.y)<28){
+        b.dead=true;
+        const k=c.hit(b.dmg);
+        if(k){c.onDeath();chests=chests.filter(x=>x!==c);}
+        break;
+      }
+    }
+  });
+
+  // Bomb explosion ↔ Chest
+  explosions.forEach(e=>{
+    if(!(e instanceof BombExplosion))return;
+    chests.forEach(c=>{
+      if(c.dead||e.hitSet.has(c))return;
+      if(Math.hypot(c.x-e.x,c.y-e.y)<=e.r){
+        e.hitSet.add(c);
+        const k=c.hit(e.dmg);
+        if(k){c.onDeath();chests=chests.filter(x=>x!==c);}
+      }
+    });
+  });
+
   // Bomb bullets
   bullets.filter(b=>b instanceof BombBullet).forEach(b=>{if(b.offScreen())b.detonate();});
 
@@ -754,6 +970,11 @@ function gameLoop(ts){
   lasers.forEach(l=>l.update());
   lasers=lasers.filter(l=>!l.dead);
   lasers.forEach(l=>l.draw());
+
+  // Electric chains
+  chains.forEach(c=>c.update());
+  chains=chains.filter(c=>!c.dead);
+  chains.forEach(c=>c.draw());
 
   // Explosions
   explosions.forEach(e=>e.update());
@@ -772,7 +993,10 @@ function gameLoop(ts){
 
 function levelUp(){
   level++;fishThisWave=0;
-  waveGoal=10+level*2;spawnInterval=Math.max(650,1600-level*80);
+  waveGoal=10+level*2;
+  const baseInterval=DEEP_MODE?1100:1600;
+  const minInterval=DEEP_MODE?450:650;
+  spawnInterval=Math.max(minInterval,baseInterval-level*80);
   document.getElementById('levelVal').textContent=level;
   sndLevel();flashBig('🌊 LEVEL '+level+'  UP!','#00d4ff');
 }
@@ -795,13 +1019,18 @@ function togglePause(){
 function startGame(){
   document.getElementById('startOverlay').classList.remove('active');
   gameRunning=true;gamePaused=false;
-  fishes=[];bullets=[];lasers=[];explosions=[];particles=[];
-  score=0;level=1;fishThisWave=0;waveGoal=10;spawnInterval=1600;
-  combo=0;lastKillTime=0;activeBoss=null;
+  fishes=[];bullets=[];lasers=[];chains=[];explosions=[];particles=[];chests=[];
+  score=0;level=1;fishThisWave=0;waveGoal=10;
+  spawnInterval=DEEP_MODE?1100:1600;
+  combo=0;lastKillTime=0;activeBoss=null;freezeUntil=0;lastChestSpawn=0;
   document.getElementById('scoreVal').textContent='0';
   document.getElementById('levelVal').textContent='1';
   document.getElementById('comboVal').textContent='—';
   document.getElementById('bossBar').style.display='none';
+  // Room badge
+  const rb=document.getElementById('roomBadge');
+  if(DEEP_MODE){rb.textContent='🌊 DEEP SEA ×2';rb.style.color='#00d4ff';rb.style.borderColor='#00d4ff';}
+  else{rb.textContent='🎮 NORMAL';rb.style.color='#aaa';rb.style.borderColor='#556';}
   setC(getC());
   if(animFrame)cancelAnimationFrame(animFrame);
   animFrame=requestAnimationFrame(gameLoop);
@@ -809,6 +1038,7 @@ function startGame(){
 
 function restartGame(){
   document.getElementById('gameOverOverlay').classList.remove('active');
+  chains=[];chests=[];freezeUntil=0;lastChestSpawn=0;
   if(getC()<W_COST[0])setC(200);
   startGame();
 }
@@ -823,6 +1053,7 @@ document.addEventListener('keydown',e=>{
   if(e.code==='Space'||e.code==='Escape'){e.preventDefault();togglePause();}
   if(e.code==='Digit1')setWeapon(0);if(e.code==='Digit2')setWeapon(1);
   if(e.code==='Digit3')setWeapon(2);if(e.code==='Digit4')setWeapon(3);
+  if(e.code==='Digit5')setWeapon(4);
 });
 
 // init
