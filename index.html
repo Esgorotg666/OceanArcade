@@ -1,49 +1,344 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Best Budget Noise Cancelling Headphones 2026</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; line-height: 1.6; background: #f9f9f9; color: #333; }
-        h1, h2 { color: #2c3e50; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background: #3498db; color: white; }
-        .hero { background: linear-gradient(#1e3a8a, #3b82f6); color: white; padding: 50px 20px; text-align: center; border-radius: 12px; margin-bottom: 30px; }
-        .cta { background: #22c55e; color: white; padding: 18px 35px; text-decoration: none; border-radius: 8px; font-size: 1.3em; display: inline-block; margin: 15px 0; }
-        .disclosure { font-size: 0.85em; color: #666; text-align: center; margin: 30px 0; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JUWA 2.0 – Game Platform</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --ocean:#030b1a;--card:#041230;--cyan:#00d4ff;--gold:#ffd700;
+    --orange:#ff6b35;--green:#00ff88;--purple:#a855f7;
+  }
+  body{
+    background:var(--ocean);color:#fff;
+    font-family:'Segoe UI',Arial,sans-serif;min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  /* ---- animated background ---- */
+  .bg-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+  /* ---- header ---- */
+  header{
+    position:relative;z-index:10;display:flex;align-items:center;
+    justify-content:space-between;padding:14px 24px;
+    background:rgba(3,11,26,.92);backdrop-filter:blur(8px);
+    border-bottom:2px solid var(--cyan);box-shadow:0 0 20px rgba(0,212,255,.3);
+  }
+  .logo-wrap{display:flex;align-items:center;gap:10px}
+  .logo-text{
+    font-size:1.9em;font-weight:900;letter-spacing:3px;
+    background:linear-gradient(90deg,var(--cyan),var(--gold));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    text-shadow:none;
+  }
+  .logo-sub{font-size:.6em;color:#88aacc;letter-spacing:2px;margin-top:-4px}
+  .credits-box{
+    display:flex;align-items:center;gap:10px;
+    background:rgba(255,215,0,.12);border:1.5px solid var(--gold);
+    border-radius:30px;padding:8px 18px;
+    box-shadow:0 0 12px rgba(255,215,0,.25);
+  }
+  .credits-label{font-size:.75em;color:#aaa;letter-spacing:1px}
+  .credits-amount{font-size:1.4em;font-weight:700;color:var(--gold)}
+
+  /* ---- hero ---- */
+  .hero{
+    position:relative;z-index:5;text-align:center;padding:48px 20px 30px;
+  }
+  .hero h1{
+    font-size:clamp(1.6em,5vw,2.8em);font-weight:900;letter-spacing:2px;
+    text-shadow:0 0 30px var(--cyan);margin-bottom:10px;
+  }
+  .hero p{color:#88aacc;font-size:1.1em;margin-bottom:24px}
+  .btn-claim{
+    background:linear-gradient(135deg,var(--orange),#ff9f1c);
+    color:#000;font-weight:800;font-size:1em;padding:14px 32px;
+    border:none;border-radius:30px;cursor:pointer;letter-spacing:1px;
+    box-shadow:0 0 20px rgba(255,107,53,.5);transition:.2s;
+  }
+  .btn-claim:hover{transform:scale(1.05);box-shadow:0 0 30px rgba(255,107,53,.8)}
+
+  /* ---- ticker ---- */
+  .ticker-bar{
+    position:relative;z-index:5;background:rgba(0,212,255,.08);
+    border-top:1px solid rgba(0,212,255,.3);border-bottom:1px solid rgba(0,212,255,.3);
+    overflow:hidden;padding:8px 0;
+  }
+  .ticker-inner{
+    display:flex;gap:60px;white-space:nowrap;
+    animation:ticker 18s linear infinite;
+  }
+  .ticker-item{color:var(--gold);font-size:.88em;font-weight:600}
+  .ticker-item span{color:#fff;margin:0 4px}
+  @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  /* ---- games grid ---- */
+  .section-title{
+    position:relative;z-index:5;text-align:center;font-size:1.3em;
+    font-weight:700;color:var(--cyan);letter-spacing:2px;
+    margin:30px 0 16px;text-transform:uppercase;
+  }
+  .games-grid{
+    position:relative;z-index:5;
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:20px;padding:0 20px 20px;max-width:900px;margin:0 auto;
+  }
+  .game-card{
+    background:var(--card);border:1.5px solid rgba(0,212,255,.2);
+    border-radius:16px;overflow:hidden;text-decoration:none;color:#fff;
+    transition:.25s;box-shadow:0 4px 20px rgba(0,0,0,.4);display:block;
+  }
+  .game-card:hover{
+    border-color:var(--cyan);transform:translateY(-4px);
+    box-shadow:0 8px 30px rgba(0,212,255,.3);
+  }
+  .game-thumb{
+    width:100%;height:160px;display:flex;align-items:center;justify-content:center;
+    font-size:5em;position:relative;overflow:hidden;
+  }
+  .thumb-fish{background:linear-gradient(135deg,#001a3d,#003d6b,#005a8e)}
+  .thumb-slots{background:linear-gradient(135deg,#1a0030,#3d006b,#5a008e)}
+  .thumb-keno{background:linear-gradient(135deg,#001a10,#003d20,#005a30)}
+  .thumb-coming{background:linear-gradient(135deg,#1a1a1a,#333,#444);opacity:.6}
+  .game-badge{
+    position:absolute;top:10px;right:10px;font-size:.35em;
+    padding:3px 10px;border-radius:20px;font-weight:700;letter-spacing:1px;
+  }
+  .badge-hot{background:var(--orange);color:#000}
+  .badge-new{background:var(--green);color:#000}
+  .badge-soon{background:#444;color:#aaa}
+  .game-info{padding:14px 16px}
+  .game-info h3{font-size:1.1em;font-weight:700;margin-bottom:4px}
+  .game-info p{font-size:.82em;color:#88aacc}
+  .game-info .play-btn{
+    display:inline-block;margin-top:10px;background:linear-gradient(90deg,var(--cyan),#0099cc);
+    color:#000;font-weight:700;font-size:.82em;padding:6px 18px;
+    border-radius:20px;letter-spacing:1px;
+  }
+  .coming-soon .play-btn{background:#333;color:#666;cursor:not-allowed}
+
+  /* ---- stats bar ---- */
+  .stats-bar{
+    position:relative;z-index:5;display:flex;justify-content:center;gap:30px;
+    flex-wrap:wrap;padding:20px;max-width:700px;margin:0 auto 10px;
+  }
+  .stat-item{text-align:center}
+  .stat-num{font-size:1.6em;font-weight:800;color:var(--cyan)}
+  .stat-label{font-size:.75em;color:#88aacc;letter-spacing:1px}
+
+  /* ---- footer ---- */
+  footer{
+    position:relative;z-index:5;text-align:center;padding:20px;
+    font-size:.75em;color:#446;border-top:1px solid #112;
+  }
+
+  /* ---- modal ---- */
+  .modal-overlay{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);
+    z-index:100;align-items:center;justify-content:center;
+  }
+  .modal-overlay.open{display:flex}
+  .modal{
+    background:var(--card);border:2px solid var(--gold);border-radius:16px;
+    padding:30px;max-width:340px;width:90%;text-align:center;
+    box-shadow:0 0 40px rgba(255,215,0,.3);
+  }
+  .modal h2{color:var(--gold);margin-bottom:12px}
+  .modal p{color:#88aacc;font-size:.9em;margin-bottom:20px}
+  .modal-close{
+    background:var(--gold);color:#000;font-weight:700;padding:10px 28px;
+    border:none;border-radius:20px;cursor:pointer;font-size:1em;
+  }
+  .coin-burst{font-size:2.5em;animation:burst .6s ease-out}
+  @keyframes burst{from{transform:scale(0) rotate(-20deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+</style>
 </head>
 <body>
-    <div class="hero">
-        <h1>Best Budget Noise Cancelling Headphones 2026</h1>
-        <p>Top picks under $150 that actually block noise well. Save money without sacrificing quality.</p>
-        <a href="YOUR_AMAZON_TOP_PICK_LINK" class="cta">Shop My #1 Pick on Amazon</a>
+
+<canvas class="bg-canvas" id="bgCanvas"></canvas>
+
+<header>
+  <div class="logo-wrap">
+    <div>
+      <div class="logo-text">JUWA 2.0</div>
+      <div class="logo-sub">GAME PLATFORM</div>
     </div>
+  </div>
+  <div class="credits-box">
+    <span class="credits-label">COINS</span>
+    <span class="credits-amount" id="creditsDisplay">0</span>
+  </div>
+</header>
 
-    <h2>Top Recommendations</h2>
-    <table>
-        <tr><th>Model</th><th>Price Range</th><th>Best For</th><th>Why We Like It</th><th>Link</th></tr>
-        <tr><td>Soundcore Space One</td><td>$80–$110</td><td>Overall best value</td><td>Strong ANC, 40h battery, comfortable</td><td><a href="YOUR_AMAZON_LINK">Buy on Amazon</a></td></tr>
-        <tr><td>Soundcore Life Q20i / Q30</td><td>$50–$80</td><td>Budget king</td><td>Long battery, big bass, solid noise blocking</td><td><a href="YOUR_AMAZON_LINK">Buy on Amazon</a></td></tr>
-        <tr><td>Sony WH-CH720N</td><td>$90–$130</td><td>App + sound quality</td><td>Lightweight, good ANC for commuting</td><td><a href="YOUR_AMAZON_LINK">Buy on Amazon</a></td></tr>
-        <tr><td>EarFun Wave Pro</td><td>$70–$100</td><td>Travel & gym</td><td>Impressive ANC under $100</td><td><a href="YOUR_AMAZON_LINK">Buy on Amazon</a></td></tr>
-    </table>
+<div class="ticker-bar">
+  <div class="ticker-inner" id="ticker"></div>
+</div>
 
-    <h2>Quick Buying Tips</h2>
-    <ul>
-        <li>Focus on ANC strength for planes/trains and battery life (40+ hours is ideal)</li>
-        <li>Over-ear models block more noise than earbuds for most people</li>
-        <li>Check return policies — try them at home</li>
-        <li>Look for current deals on Amazon (prices drop often)</li>
-    </ul>
+<section class="hero">
+  <h1>🌊 Play &amp; Win Big!</h1>
+  <p>The ultimate fish shooting &amp; casino game experience</p>
+  <button class="btn-claim" onclick="claimFreeCoins()">🎁 Claim 500 Free Coins</button>
+</section>
 
-    <h2>Why Buy Through These Links?</h2>
-    <p>I test and compare so you don't have to. As an Amazon Associate I earn from qualifying purchases at no extra cost to you. This helps keep the guide free and updated.</p>
+<div class="stats-bar">
+  <div class="stat-item"><div class="stat-num" id="totalWins">0</div><div class="stat-label">TOTAL WINS</div></div>
+  <div class="stat-item"><div class="stat-num" id="fishKilled">0</div><div class="stat-label">FISH CAUGHT</div></div>
+  <div class="stat-item"><div class="stat-num" id="spinsPlayed">0</div><div class="stat-label">SPINS PLAYED</div></div>
+</div>
 
-    <footer style="text-align:center; margin-top:50px; font-size:0.9em;">
-        <p>Updated May 2026 • Honest picks for real people</p>
-    </footer>
+<p class="section-title">🎮 Choose Your Game</p>
+
+<div class="games-grid">
+  <a href="fish.html" class="game-card">
+    <div class="game-thumb thumb-fish">
+      🐟<span class="game-badge badge-hot">🔥 HOT</span>
+    </div>
+    <div class="game-info">
+      <h3>🎯 Fish Shooting</h3>
+      <p>Shoot colorful fish &amp; earn coins. Boss fish pay big!</p>
+      <span class="play-btn">▶ PLAY NOW</span>
+    </div>
+  </a>
+
+  <a href="slots.html" class="game-card">
+    <div class="game-thumb thumb-slots">
+      🎰<span class="game-badge badge-new">✨ NEW</span>
+    </div>
+    <div class="game-info">
+      <h3>🎰 Lucky Slots</h3>
+      <p>Spin the reels, match symbols, win coin jackpots!</p>
+      <span class="play-btn">▶ PLAY NOW</span>
+    </div>
+  </a>
+
+  <div class="game-card coming-soon" style="cursor:default">
+    <div class="game-thumb thumb-keno">
+      🎱<span class="game-badge badge-soon">SOON</span>
+    </div>
+    <div class="game-info">
+      <h3>🎱 Dragon Keno</h3>
+      <p>Pick your numbers and ride the dragon to victory!</p>
+      <span class="play-btn">COMING SOON</span>
+    </div>
+  </div>
+
+  <div class="game-card coming-soon" style="cursor:default">
+    <div class="game-thumb thumb-coming">
+      🃏<span class="game-badge badge-soon">SOON</span>
+    </div>
+    <div class="game-info">
+      <h3>🃏 Ocean Poker</h3>
+      <p>Deep sea poker with wild card bonuses!</p>
+      <span class="play-btn">COMING SOON</span>
+    </div>
+  </div>
+</div>
+
+<!-- Free coins modal -->
+<div class="modal-overlay" id="coinModal">
+  <div class="modal">
+    <div class="coin-burst">💰</div>
+    <h2>+500 Coins Added!</h2>
+    <p>Your free coins have been added to your wallet. Come back in 30 minutes for more!</p>
+    <button class="modal-close" onclick="document.getElementById('coinModal').classList.remove('open')">AWESOME!</button>
+  </div>
+</div>
+
+<footer>
+  <p>⚠️ FOR ENTERTAINMENT ONLY — No real money, no real gambling. Play for fun!</p>
+  <p style="margin-top:6px;color:#334">JUWA 2.0 Demo Platform • Free-to-Play</p>
+</footer>
+
+<script>
+// ===================== Credits System =====================
+const STORAGE_KEYS = { credits:'juwa_credits', wins:'juwa_wins', fish:'juwa_fish', spins:'juwa_spins', lastClaim:'juwa_claim' };
+
+function getVal(key, def=0){ return parseInt(localStorage.getItem(key)||def) }
+function setVal(key, v){ localStorage.setItem(key, v) }
+
+function updateDisplay(){
+  document.getElementById('creditsDisplay').textContent = getVal(STORAGE_KEYS.credits,1000).toLocaleString();
+  document.getElementById('totalWins').textContent = getVal(STORAGE_KEYS.wins).toLocaleString();
+  document.getElementById('fishKilled').textContent = getVal(STORAGE_KEYS.fish).toLocaleString();
+  document.getElementById('spinsPlayed').textContent = getVal(STORAGE_KEYS.spins).toLocaleString();
+}
+
+// Initialize credits if first visit
+if(!localStorage.getItem(STORAGE_KEYS.credits)){
+  setVal(STORAGE_KEYS.credits, 1000);
+}
+
+function claimFreeCoins(){
+  const last = parseInt(localStorage.getItem(STORAGE_KEYS.lastClaim)||0);
+  const now = Date.now();
+  const cooldown = 30 * 60 * 1000;
+  if(now - last < cooldown){
+    const left = Math.ceil((cooldown-(now-last))/60000);
+    alert(`Come back in ${left} minute${left!==1?'s':''} for more free coins!`);
+    return;
+  }
+  setVal(STORAGE_KEYS.credits, getVal(STORAGE_KEYS.credits,0) + 500);
+  setVal(STORAGE_KEYS.lastClaim, now);
+  document.getElementById('coinModal').classList.add('open');
+  updateDisplay();
+}
+
+updateDisplay();
+
+// ===================== Live Ticker =====================
+const tickerWins = [
+  ['🐟 BigFish99','scored','2,450 coins','on Fish Shooting'],
+  ['🎰 LuckyJack','won','18x jackpot','on Lucky Slots'],
+  ['🐠 OceanKing','caught','a Dragon Boss','for 500 coins'],
+  ['⭐ StarPlayer','hit','Triple 7s','on Lucky Slots'],
+  ['🦈 SharkHunter','earned','850 coins','this session'],
+  ['🐡 PufferPro','unlocked','Power Cannon','in Fish Game'],
+  ['🎯 AimGod','caught','12 fish','in one wave'],
+];
+function buildTicker(){
+  const all = [...tickerWins,...tickerWins];
+  document.getElementById('ticker').innerHTML = all.map(w=>
+    `<span class="ticker-item">🏆 <span>${w[0]}</span> ${w[1]} <span style="color:var(--cyan)">${w[2]}</span> ${w[3]}</span>`
+  ).join('');
+}
+buildTicker();
+
+// ===================== BG Canvas (Bubbles) =====================
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+let bubbles=[];
+
+function resizeBg(){ canvas.width=innerWidth; canvas.height=innerHeight }
+window.addEventListener('resize',resizeBg); resizeBg();
+
+for(let i=0;i<50;i++){
+  bubbles.push({
+    x:Math.random()*innerWidth, y:Math.random()*innerHeight,
+    r:Math.random()*4+1, speed:Math.random()*.6+.2,
+    opacity:Math.random()*.3+.05
+  });
+}
+
+function drawBg(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // subtle gradient
+  const g=ctx.createLinearGradient(0,0,0,canvas.height);
+  g.addColorStop(0,'#030b1a'); g.addColorStop(1,'#000d08');
+  ctx.fillStyle=g; ctx.fillRect(0,0,canvas.width,canvas.height);
+  // bubbles
+  bubbles.forEach(b=>{
+    b.y-=b.speed;
+    if(b.y<-10){ b.y=canvas.height+10; b.x=Math.random()*canvas.width }
+    ctx.beginPath();
+    ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(0,212,255,${b.opacity})`;
+    ctx.lineWidth=1; ctx.stroke();
+  });
+  requestAnimationFrame(drawBg);
+}
+drawBg();
+</script>
 </body>
 </html>

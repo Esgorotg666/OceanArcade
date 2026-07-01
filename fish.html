@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fish Shooting – JUWA 2.0</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#020d1a;color:#fff;font-family:'Segoe UI',Arial,sans-serif;
+    overflow:hidden;height:100vh;display:flex;flex-direction:column;}
+  /* ---- HUD ---- */
+  #hud{
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;
+    padding:10px 16px;background:rgba(2,13,26,.95);
+    border-bottom:2px solid #00d4ff;z-index:20;flex-shrink:0;
+  }
+  .hud-btn{
+    background:rgba(0,212,255,.15);border:1.5px solid #00d4ff;
+    color:#00d4ff;padding:6px 14px;border-radius:20px;cursor:pointer;
+    font-size:.82em;font-weight:600;letter-spacing:1px;text-decoration:none;
+    transition:.15s;
+  }
+  .hud-btn:hover{background:rgba(0,212,255,.3)}
+  .hud-stat{text-align:center}
+  .hud-label{font-size:.65em;color:#88aacc;letter-spacing:1px}
+  .hud-val{font-size:1.15em;font-weight:700}
+  #coinsVal{color:#ffd700}
+  #scoreVal{color:#00ff88}
+  #levelVal{color:#a855f7}
+  #ammoVal{color:#ff6b35}
+
+  /* ---- game wrapper ---- */
+  #gameWrap{position:relative;flex:1;overflow:hidden;cursor:crosshair}
+  #gameCanvas{display:block;width:100%;height:100%}
+
+  /* ---- overlay screens ---- */
+  .overlay{
+    display:none;position:absolute;inset:0;background:rgba(2,13,26,.88);
+    align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:30;
+  }
+  .overlay.active{display:flex}
+  .overlay h2{font-size:2em;color:#ffd700;text-shadow:0 0 20px #ffd700}
+  .overlay p{color:#88aacc;text-align:center;max-width:320px;line-height:1.5}
+  .big-btn{
+    background:linear-gradient(90deg,#00d4ff,#0099cc);color:#000;
+    font-weight:800;font-size:1.1em;padding:14px 36px;border:none;
+    border-radius:30px;cursor:pointer;letter-spacing:1px;
+    box-shadow:0 0 20px rgba(0,212,255,.5);
+  }
+  .big-btn:hover{filter:brightness(1.15);transform:scale(1.04)}
+
+  /* ---- cannon selector ---- */
+  .cannon-bar{
+    position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+    display:flex;gap:8px;z-index:15;
+  }
+  .cannon-btn{
+    background:rgba(0,0,0,.6);border:1.5px solid #334;
+    color:#aaa;padding:5px 12px;border-radius:16px;cursor:pointer;
+    font-size:.78em;font-weight:600;transition:.15s;
+  }
+  .cannon-btn.active{border-color:#ffd700;color:#ffd700;background:rgba(255,215,0,.12)}
+  .cannon-btn:hover:not(.active){border-color:#556}
+
+  /* ---- kill popup ---- */
+  .kill-popup{
+    position:absolute;font-weight:800;font-size:1.1em;pointer-events:none;
+    text-shadow:0 0 8px currentColor;animation:popUp .9s ease-out forwards;z-index:25;
+  }
+  @keyframes popUp{
+    0%{opacity:1;transform:translateY(0) scale(1)}
+    100%{opacity:0;transform:translateY(-60px) scale(1.3)}
+  }
+  #waveMsg{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    font-size:2.2em;font-weight:900;color:#ffd700;text-shadow:0 0 30px #ffd700;
+    pointer-events:none;z-index:25;opacity:0;transition:opacity .3s;
+  }
+</style>
+</head>
+<body>
+
+<div id="hud">
+  <a href="index.html" class="hud-btn">← LOBBY</a>
+  <div class="hud-stat"><div class="hud-label">COINS</div><div class="hud-val" id="coinsVal">0</div></div>
+  <div class="hud-stat"><div class="hud-label">SCORE</div><div class="hud-val" id="scoreVal">0</div></div>
+  <div class="hud-stat"><div class="hud-label">LEVEL</div><div class="hud-val" id="levelVal">1</div></div>
+  <div class="hud-stat"><div class="hud-label">SHOTS</div><div class="hud-val" id="ammoVal">1💰</div></div>
+  <button class="hud-btn" id="pauseBtn" onclick="togglePause()">⏸ PAUSE</button>
+</div>
+
+<div id="gameWrap">
+  <canvas id="gameCanvas"></canvas>
+  <div class="cannon-bar">
+    <button class="cannon-btn active" onclick="setCannon(0)" id="cb0">🟡 x1</button>
+    <button class="cannon-btn" onclick="setCannon(1)" id="cb1">🟠 x3</button>
+    <button class="cannon-btn" onclick="setCannon(2)" id="cb2">🔴 x5</button>
+    <button class="cannon-btn" onclick="setCannon(3)" id="cb3">⚡ x10</button>
+  </div>
+  <div id="waveMsg"></div>
+
+  <div class="overlay active" id="startOverlay">
+    <h2>🌊 FISH SHOOTING</h2>
+    <p>Click to shoot fish and earn coins.<br>
+       Bigger fish = more coins!<br>
+       Boss fish pay the most – but watch your ammo!</p>
+    <button class="big-btn" onclick="startGame()">▶ START GAME</button>
+  </div>
+
+  <div class="overlay" id="pauseOverlay">
+    <h2>⏸ PAUSED</h2>
+    <p>Take a breather, you've got this!</p>
+    <button class="big-btn" onclick="togglePause()">▶ RESUME</button>
+    <a href="index.html" class="hud-btn" style="color:#88aacc">← Back to Lobby</a>
+  </div>
+
+  <div class="overlay" id="gameOverOverlay">
+    <h2>💸 OUT OF COINS!</h2>
+    <p id="goMsg"></p>
+    <button class="big-btn" onclick="location.href='index.html'">🎁 Get Free Coins</button>
+    <button class="big-btn" style="background:linear-gradient(90deg,#a855f7,#7e22ce)" onclick="restartGame()">▶ TRY AGAIN</button>
+  </div>
+</div>
+
+<script>
+// ===================== State =====================
+const STORAGE = {credits:'juwa_credits', fish:'juwa_fish', wins:'juwa_wins'};
+const getCredits = ()=>parseInt(localStorage.getItem(STORAGE.credits)||1000);
+const setCredits = v=>{ localStorage.setItem(STORAGE.credits,v); document.getElementById('coinsVal').textContent=v.toLocaleString(); };
+const addFish = n=>{ const v=(parseInt(localStorage.getItem(STORAGE.fish)||0))+n; localStorage.setItem(STORAGE.fish,v); };
+const addWin = ()=>{ const v=(parseInt(localStorage.getItem(STORAGE.wins)||0))+1; localStorage.setItem(STORAGE.wins,v); };
+
+let gameRunning=false, gamePaused=false;
+let score=0, level=1, fishThisWave=0, waveGoal=10;
+let cannonIndex=0;
+const CANNON_COST=[1,3,5,10];
+const CANNON_DMG=[1,2,4,8];
+
+// ===================== Canvas =====================
+const canvas=document.getElementById('gameCanvas');
+const ctx=canvas.getContext('2d');
+let W=0,H=0;
+
+function resize(){
+  const wrap=document.getElementById('gameWrap');
+  W=canvas.width=wrap.clientWidth;
+  H=canvas.height=wrap.clientHeight;
+}
+window.addEventListener('resize',resize); resize();
+
+// ===================== Fish Types =====================
+const FISH_TYPES=[
+  {name:'Small Blue',   emoji:'🐟', hp:1,  spd:2.4, reward:[2,5],   w:36,h:28, prob:35},
+  {name:'Clown Fish',   emoji:'🐠', hp:2,  spd:2.0, reward:[5,12],  w:40,h:32, prob:25},
+  {name:'Green Fish',   emoji:'🐡', hp:4,  spd:1.6, reward:[12,22], w:48,h:38, prob:18},
+  {name:'Sea Turtle',   emoji:'🐢', hp:7,  spd:1.1, reward:[25,40], w:56,h:44, prob:12},
+  {name:'Shark',        emoji:'🦈', hp:14, spd:1.8, reward:[45,80], w:70,h:45, prob:7},
+  {name:'Gold Dragon',  emoji:'🐉', hp:35, spd:0.7, reward:[120,200],w:90,h:60,prob:2},
+  {name:'BOSS Crab',    emoji:'🦀', hp:60, spd:0.5, reward:[300,500],w:110,h:80,prob:1},
+];
+
+function pickFishType(){
+  const total=FISH_TYPES.reduce((a,t)=>a+t.prob,0);
+  let r=Math.random()*total;
+  for(const t of FISH_TYPES){ r-=t.prob; if(r<=0)return t; }
+  return FISH_TYPES[0];
+}
+
+// ===================== Entity Arrays =====================
+let fishes=[], bullets=[], particles=[];
+
+class Fish{
+  constructor(){
+    const t=pickFishType();
+    this.type=t;
+    this.hp=t.hp; this.maxHp=t.hp;
+    this.w=t.w; this.h=t.h;
+    this.dir=Math.random()<.5?1:-1;
+    this.x=this.dir>0?-this.w-10:W+this.w+10;
+    this.y=Math.random()*(H*0.75-60)+40;
+    this.spd=t.spd*(0.85+Math.random()*.3)*this.dir;
+    this.vy=(Math.random()-.5)*.6;
+    this.reward=t.reward;
+    this.wobble=Math.random()*Math.PI*2;
+    this.dead=false;
+  }
+  update(){
+    this.x+=this.spd;
+    this.y+=this.vy;
+    this.wobble+=0.08;
+    this.y+=Math.sin(this.wobble)*0.4;
+    if(this.y<20) this.vy=Math.abs(this.vy);
+    if(this.y>H*0.85) this.vy=-Math.abs(this.vy);
+  }
+  offScreen(){ return this.dir>0?this.x>W+this.w+20:this.x<-this.w-20 }
+  draw(){
+    ctx.save();
+    if(this.dir<0) ctx.scale(-1,1);
+    const dx=this.dir<0?-this.x:this.x;
+    ctx.font=`${this.h*0.9}px serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(this.type.emoji, dx, this.y);
+    // HP bar for tougher fish
+    if(this.maxHp>3&&this.hp<this.maxHp){
+      const bw=this.w*1.2, bh=5;
+      const bx=this.dir<0?-this.x-bw/2:this.x-bw/2;
+      ctx.restore();
+      ctx.save();
+      ctx.fillStyle='rgba(0,0,0,.5)';
+      ctx.fillRect(bx,this.y-this.h*.7,bw,bh);
+      ctx.fillStyle=this.hp/this.maxHp>.5?'#00ff88':'#ff6b35';
+      ctx.fillRect(bx,this.y-this.h*.7,bw*(this.hp/this.maxHp),bh);
+    }
+    ctx.restore();
+  }
+  hit(dmg){
+    this.hp-=dmg;
+    spawnHitSparks(this.x,this.y);
+    if(this.hp<=0){
+      this.dead=true;
+      return true;
+    }
+    return false;
+  }
+}
+
+class Bullet{
+  constructor(x,y,tx,ty,cost,dmg){
+    this.x=x; this.y=y;
+    const dx=tx-x, dy=ty-y;
+    const len=Math.sqrt(dx*dx+dy*dy)||1;
+    const spd=10+dmg*1.5;
+    this.vx=dx/len*spd; this.vy=dy/len*spd;
+    this.dmg=dmg; this.cost=cost;
+    this.dead=false;
+    this.r=dmg<=1?5:dmg<=2?7:dmg<=4?9:12;
+    this.color=dmg<=1?'#ffd700':dmg<=2?'#ff9f1c':dmg<=4?'#ff6b35':'#a855f7';
+  }
+  update(){ this.x+=this.vx; this.y+=this.vy }
+  offScreen(){ return this.x<-20||this.x>W+20||this.y<-20||this.y>H+20 }
+  draw(){
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+    const g=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r);
+    g.addColorStop(0,'#fff'); g.addColorStop(.5,this.color); g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;
+    ctx.shadowBlur=12; ctx.shadowColor=this.color;
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+class Particle{
+  constructor(x,y,color){
+    this.x=x; this.y=y;
+    this.vx=(Math.random()-.5)*8;
+    this.vy=(Math.random()-.5)*8-2;
+    this.life=1; this.decay=Math.random()*.04+.03;
+    this.r=Math.random()*4+2;
+    this.color=color||'#ffd700';
+  }
+  update(){ this.x+=this.vx; this.y+=this.vy; this.vy+=.15; this.life-=this.decay }
+  draw(){
+    ctx.save();
+    ctx.globalAlpha=this.life;
+    ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+    ctx.fillStyle=this.color; ctx.shadowBlur=6; ctx.shadowColor=this.color;
+    ctx.fill(); ctx.restore();
+  }
+}
+
+function spawnHitSparks(x,y){
+  for(let i=0;i<6;i++) particles.push(new Particle(x,y,'#fff'));
+}
+
+function spawnExplosion(x,y,colors){
+  for(let i=0;i<22;i++) particles.push(new Particle(x,y,colors[i%colors.length]));
+}
+
+// ===================== Background =====================
+let bgBubbles=[];
+for(let i=0;i<30;i++){
+  bgBubbles.push({x:Math.random(),y:Math.random(),r:Math.random()*3+1,spd:Math.random()*.3+.1,op:Math.random()*.2+.05});
+}
+
+let coralOffsets=[];
+for(let i=0;i<8;i++) coralOffsets.push({x:Math.random(),type:Math.floor(Math.random()*3)});
+
+function drawBackground(){
+  // Ocean gradient
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#020d1a'); g.addColorStop(.6,'#001a2e'); g.addColorStop(1,'#00090f');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+  // Light rays from top
+  ctx.save();
+  for(let i=0;i<5;i++){
+    const rx=W*(0.1+i*0.2)+Math.sin(Date.now()/3000+i)*40;
+    const rg=ctx.createLinearGradient(rx,0,rx+60,H*.7);
+    rg.addColorStop(0,'rgba(0,212,255,.06)'); rg.addColorStop(1,'transparent');
+    ctx.beginPath();
+    ctx.moveTo(rx-30,0); ctx.lineTo(rx+30,0); ctx.lineTo(rx+80,H*.7); ctx.lineTo(rx-20,H*.7);
+    ctx.fillStyle=rg; ctx.fill();
+  }
+  ctx.restore();
+
+  // Bubbles
+  bgBubbles.forEach(b=>{
+    b.y-=b.spd/60;
+    if(b.y<0){b.y=1;b.x=Math.random()}
+    ctx.beginPath();
+    ctx.arc(b.x*W,b.y*H,b.r,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(0,212,255,${b.op})`; ctx.lineWidth=1; ctx.stroke();
+  });
+
+  // Coral at bottom
+  const coralEmojis=['🪸','🌿','🪨'];
+  ctx.font='32px serif'; ctx.textAlign='center';
+  coralOffsets.forEach((c,i)=>{
+    ctx.fillText(coralEmojis[c.type], c.x*W, H-16);
+  });
+
+  // Sand stripe
+  const sand=ctx.createLinearGradient(0,H-22,0,H);
+  sand.addColorStop(0,'rgba(180,140,80,.25)'); sand.addColorStop(1,'rgba(140,100,50,.4)');
+  ctx.fillStyle=sand; ctx.fillRect(0,H-22,W,22);
+}
+
+// ===================== Cannon =====================
+let mouseX=null, mouseY=null;
+let cannonAngle=0;
+const CANNON_X=()=>W/2, CANNON_Y=()=>H-20;
+
+document.getElementById('gameWrap').addEventListener('mousemove',e=>{
+  const r=canvas.getBoundingClientRect();
+  mouseX=e.clientX-r.left; mouseY=e.clientY-r.top;
+  cannonAngle=Math.atan2(mouseY-CANNON_Y(), mouseX-CANNON_X());
+});
+document.getElementById('gameWrap').addEventListener('touchmove',e=>{
+  e.preventDefault();
+  const r=canvas.getBoundingClientRect();
+  mouseX=e.touches[0].clientX-r.left; mouseY=e.touches[0].clientY-r.top;
+  cannonAngle=Math.atan2(mouseY-CANNON_Y(), mouseX-CANNON_X());
+},{passive:false});
+
+document.getElementById('gameWrap').addEventListener('click',shoot);
+document.getElementById('gameWrap').addEventListener('touchstart',e=>{
+  e.preventDefault();
+  const r=canvas.getBoundingClientRect();
+  mouseX=e.touches[0].clientX-r.left; mouseY=e.touches[0].clientY-r.top;
+  shoot();
+},{passive:false});
+
+function shoot(){
+  if(!gameRunning||gamePaused) return;
+  const cost=CANNON_COST[cannonIndex];
+  const credits=getCredits();
+  if(credits<cost){ showGameOver(); return; }
+  setCredits(credits-cost);
+  const tx=mouseX??CANNON_X(), ty=mouseY??(H/2);
+  bullets.push(new Bullet(CANNON_X(),CANNON_Y(),tx,ty,cost,CANNON_DMG[cannonIndex]));
+}
+
+function drawCannon(){
+  const cx=CANNON_X(), cy=CANNON_Y();
+  ctx.save();
+  ctx.translate(cx,cy);
+  ctx.rotate(cannonAngle-Math.PI/2);
+  // base
+  ctx.beginPath();
+  ctx.arc(0,0,16,0,Math.PI*2);
+  const bg=ctx.createRadialGradient(0,0,4,0,0,16);
+  bg.addColorStop(0,'#334455'); bg.addColorStop(1,'#111e2b');
+  ctx.fillStyle=bg;
+  ctx.shadowBlur=10; ctx.shadowColor='#00d4ff'; ctx.fill();
+  // barrel
+  ctx.fillStyle='#445566'; ctx.strokeStyle='#00d4ff'; ctx.lineWidth=1.5;
+  ctx.fillRect(-5,-22,10,22); ctx.strokeRect(-5,-22,10,22);
+  // glow ring
+  ctx.beginPath(); ctx.arc(0,0,18,0,Math.PI*2);
+  const cc=CANNON_COST[cannonIndex];
+  ctx.strokeStyle=cc<=1?'#ffd700':cc<=3?'#ff9f1c':cc<=5?'#ff6b35':'#a855f7';
+  ctx.lineWidth=2; ctx.globalAlpha=.6; ctx.stroke();
+  ctx.restore();
+}
+
+// ===================== Game Loop =====================
+let lastSpawn=0, spawnInterval=1600, animFrame=null;
+
+function gameLoop(ts){
+  if(!gameRunning){ return }
+  if(gamePaused){ animFrame=requestAnimationFrame(gameLoop); return }
+
+  drawBackground();
+
+  // Spawn fish
+  if(ts-lastSpawn>spawnInterval){
+    fishes.push(new Fish());
+    lastSpawn=ts;
+    fishThisWave++;
+    if(fishThisWave>=waveGoal) levelUp();
+  }
+
+  // Update & draw fish
+  fishes.forEach(f=>f.update());
+  fishes=fishes.filter(f=>!f.offScreen());
+  fishes.forEach(f=>f.draw());
+
+  // Update & draw bullets
+  bullets.forEach(b=>b.update());
+  bullets=bullets.filter(b=>!b.dead&&!b.offScreen());
+  bullets.forEach(b=>b.draw());
+
+  // Collision
+  bullets.forEach(b=>{
+    if(b.dead)return;
+    for(const f of fishes){
+      if(f.dead)continue;
+      const dx=b.x-f.x, dy=b.y-f.y;
+      const r=f.w*.5;
+      if(dx*dx+dy*dy<r*r){
+        const killed=f.hit(b.dmg);
+        b.dead=true;
+        if(killed){
+          const reward=f.reward[0]+Math.floor(Math.random()*(f.reward[1]-f.reward[0]+1));
+          setCredits(getCredits()+reward);
+          score+=reward;
+          addFish(1); addWin();
+          spawnExplosion(f.x,f.y,['#ffd700','#ff9f1c','#fff','#00ff88']);
+          showKillPopup(f.x,f.y,'+'+reward,f.type.emoji);
+          document.getElementById('scoreVal').textContent=score.toLocaleString();
+          fishes=fishes.filter(x=>x!==f);
+        }
+        break;
+      }
+    }
+  });
+
+  // Particles
+  particles.forEach(p=>p.update());
+  particles=particles.filter(p=>p.life>0);
+  particles.forEach(p=>p.draw());
+
+  drawCannon();
+  animFrame=requestAnimationFrame(gameLoop);
+}
+
+function levelUp(){
+  level++;
+  fishThisWave=0;
+  waveGoal=10+level*2;
+  spawnInterval=Math.max(700,1600-level*80);
+  document.getElementById('levelVal').textContent=level;
+  flashWaveMsg('🌊 LEVEL '+level+'!');
+}
+
+function flashWaveMsg(txt){
+  const el=document.getElementById('waveMsg');
+  el.textContent=txt; el.style.opacity=1;
+  setTimeout(()=>{ el.style.opacity=0 },1800);
+}
+
+function showKillPopup(x,y,txt,emoji){
+  const wrap=document.getElementById('gameWrap');
+  const div=document.createElement('div');
+  div.className='kill-popup';
+  div.style.cssText=`left:${x}px;top:${y-30}px;color:#ffd700`;
+  div.textContent=emoji+' '+txt;
+  wrap.appendChild(div);
+  setTimeout(()=>div.remove(),900);
+}
+
+// ===================== Controls =====================
+function setCannon(i){
+  cannonIndex=i;
+  document.querySelectorAll('.cannon-btn').forEach((b,j)=>b.classList.toggle('active',i===j));
+  document.getElementById('ammoVal').textContent=CANNON_COST[i]+'💰';
+}
+
+function togglePause(){
+  if(!gameRunning)return;
+  gamePaused=!gamePaused;
+  document.getElementById('pauseOverlay').classList.toggle('active',gamePaused);
+  document.getElementById('pauseBtn').textContent=gamePaused?'▶ RESUME':'⏸ PAUSE';
+}
+
+function startGame(){
+  document.getElementById('startOverlay').classList.remove('active');
+  gameRunning=true; gamePaused=false;
+  fishes=[]; bullets=[]; particles=[];
+  score=0; level=1; fishThisWave=0; waveGoal=10; spawnInterval=1600;
+  document.getElementById('scoreVal').textContent='0';
+  document.getElementById('levelVal').textContent='1';
+  setCredits(getCredits());
+  if(animFrame) cancelAnimationFrame(animFrame);
+  animFrame=requestAnimationFrame(gameLoop);
+}
+
+function restartGame(){
+  document.getElementById('gameOverOverlay').classList.remove('active');
+  // give 200 bonus coins if broke
+  if(getCredits()<CANNON_COST[0]) setCredits(200);
+  startGame();
+}
+
+function showGameOver(){
+  gameRunning=false;
+  cancelAnimationFrame(animFrame);
+  document.getElementById('goMsg').textContent=`You scored ${score.toLocaleString()} points! Head back to the lobby to claim free coins.`;
+  document.getElementById('gameOverOverlay').classList.add('active');
+}
+
+// init display
+document.getElementById('coinsVal').textContent=getCredits().toLocaleString();
+document.getElementById('ammoVal').textContent=CANNON_COST[0]+'💰';
+
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'||e.code==='Escape') togglePause();
+  if(e.code==='Digit1') setCannon(0);
+  if(e.code==='Digit2') setCannon(1);
+  if(e.code==='Digit3') setCannon(2);
+  if(e.code==='Digit4') setCannon(3);
+});
+</script>
+</body>
+</html>
