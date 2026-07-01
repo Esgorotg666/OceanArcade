@@ -389,6 +389,7 @@ class Fish{
       flashBig('⚠️ BOSS INCOMING!','#ff6b35');
     }
     if(t.special==='golden') flashBig('✨ GOLDEN FISH!','#ffd700');
+    this.depthOsc=Math.random()*Math.PI*2;
   }
   update(){
     const frozen=Date.now()<freezeUntil;
@@ -411,41 +412,49 @@ class Fish{
     }
   }
   offScreen(){ return this.dir>0?this.x>W+this.w+20:this.x<-this.w-20 }
+  // Returns a 0.55–1.2 depth factor: fish near top (far) are small, near bottom (close) are large
+  getDepth(){ const base=0.55+(this.y/Math.max(H,400))*0.65; return base+Math.sin(Date.now()/2200+this.depthOsc)*0.05; }
   draw(){
     ctx.save();
+    const depth=this.getDepth();
     const flipX=this.dir<0;
     if(flipX){ctx.scale(-1,1);ctx.translate(-W,0);}
     const dx=flipX?W-this.x:this.x;
 
-    // Type-based colored aura ring
+    // 3D drop shadow — cast below fish, scales with depth
+    ctx.save();
+    ctx.globalAlpha=0.22*Math.min(1,depth);
+    ctx.beginPath();ctx.ellipse(dx,this.y+this.h*0.52*depth,this.w*0.55*depth,5,0,0,Math.PI*2);
+    ctx.fillStyle='#000014';ctx.fill();
+    ctx.restore();
+
+    // Colored aura ring (depth-scaled radius and line weight)
     const ringCol=this.type.special==='boss'?'#ff6b35':
       this.type.special==='golden'?'#ffd700':
       this.type.special==='freeze'?'#00d4ff':
       this.type.hp>=14?'#a855f7':this.type.hp>=7?'#ff9f1c':'#22ee88';
-    const ringR=Math.max(this.w,this.h)*.62;
+    const ringR=Math.max(this.w,this.h)*0.62*depth;
     ctx.save();
-    ctx.globalAlpha=0.3+Math.sin(Date.now()/380+this.wobble)*.1;
+    ctx.globalAlpha=(0.3+Math.sin(Date.now()/380+this.wobble)*.1)*Math.min(1,depth+0.2);
     ctx.beginPath();ctx.arc(dx,this.y,ringR,0,Math.PI*2);
-    ctx.strokeStyle=ringCol;ctx.lineWidth=2.5;
-    ctx.shadowBlur=16;ctx.shadowColor=ringCol;ctx.stroke();
+    ctx.strokeStyle=ringCol;ctx.lineWidth=2.5*depth;
+    ctx.shadowBlur=14;ctx.shadowColor=ringCol;ctx.stroke();
     ctx.restore();
 
-    // golden glow
-    if(this.type.special==='golden'){
-      ctx.shadowBlur=22+Math.sin(this.goldAnim)*10;
-      ctx.shadowColor='#ffd700';
-    }
-    // hit flash
-    if(this.hitFlash>0){
-      ctx.shadowBlur=24;ctx.shadowColor='#fff';
-      ctx.globalAlpha=0.55+this.hitFlash*0.45;
-    }
-    ctx.font=`${this.h*1.05}px serif`;
-    ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(this.type.emoji,dx,this.y);
-    // HP bar for tougher fish
+    // Fish emoji — depth-scaled around center for 3D perspective
+    ctx.save();
+    ctx.translate(dx,this.y);ctx.scale(depth,depth);
+    if(this.type.special==='golden'){ctx.shadowBlur=22+Math.sin(this.goldAnim)*10;ctx.shadowColor='#ffd700';}
+    if(this.hitFlash>0){ctx.shadowBlur=24;ctx.shadowColor='#fff';ctx.globalAlpha=0.55+this.hitFlash*0.45;}
+    // Distant fish get subtle depth-haze blur
+    if(depth<0.72) ctx.filter=`blur(${((0.72-depth)*2.5).toFixed(1)}px)`;
+    ctx.font=`${this.h*1.05}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(this.type.emoji,0,0);
+    ctx.filter='none';ctx.restore();
+
+    // HP bar for tougher fish (depth-scaled position/width)
     if(this.maxHp>3&&this.hp<this.maxHp){
-      const bw=this.w*1.3,bh=5,bx=dx-bw/2,by=this.y-this.h*.72;
+      const bw=this.w*1.3*depth,bh=5,bx=dx-bw/2,by=this.y-this.h*0.72*depth;
       ctx.restore();ctx.save();
       if(flipX){ctx.scale(-1,1);ctx.translate(-W,0);}
       ctx.globalAlpha=1;
@@ -825,6 +834,24 @@ function drawBackground(){
   g.addColorStop(.5,'#001f38');g.addColorStop(.82,'#001428');g.addColorStop(1,'#00080f');
   ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
 
+  // Animated water surface at top (3D depth cue — looking up through water)
+  const waveT=now/600;
+  ctx.save();
+  for(let row=0;row<4;row++){
+    const baseY=4+row*9;
+    ctx.globalAlpha=0.14-row*0.025;
+    ctx.strokeStyle=`rgba(${80+row*20},${200+row*15},255,1)`;
+    ctx.lineWidth=1.6-row*0.25;ctx.shadowBlur=0;
+    ctx.beginPath();ctx.moveTo(0,baseY);
+    for(let wx=6;wx<=W;wx+=6) ctx.lineTo(wx,baseY+Math.sin(wx*0.028+waveT+row*1.3)*(4-row));
+    ctx.stroke();
+  }
+  const surf=ctx.createLinearGradient(0,0,0,38);
+  surf.addColorStop(0,'rgba(0,45,90,.5)');surf.addColorStop(1,'rgba(0,20,50,0)');
+  ctx.globalAlpha=1;ctx.fillStyle=surf;ctx.fillRect(0,0,W,38);
+  ctx.restore();
+
+
   // Dramatic light shafts (10, screen blend, animated)
   ctx.save();ctx.globalCompositeOperation='screen';
   for(let i=0;i<10;i++){
@@ -842,14 +869,15 @@ function drawBackground(){
   }
   ctx.restore();
 
-  // Glowing bubbles
-  bgBubs.forEach(b=>{
+  // Glowing bubbles — larger ones (closer) drift horizontally for parallax depth
+  bgBubs.forEach((b,bi)=>{
     b.y-=b.spd/60;if(b.y<0){b.y=1;b.x=Math.random();}
+    const bx=b.x*W+Math.sin(now/4000+bi*0.7)*b.r*(b.r>2?3.5:1.5);
     ctx.save();
     ctx.shadowBlur=6;ctx.shadowColor=`rgba(0,200,255,${b.op*3})`;
-    ctx.beginPath();ctx.arc(b.x*W,b.y*H,b.r,0,Math.PI*2);
+    ctx.beginPath();ctx.arc(bx,b.y*H,b.r,0,Math.PI*2);
     ctx.strokeStyle=`rgba(80,220,255,${b.op*1.8})`;ctx.lineWidth=1.3;ctx.stroke();
-    ctx.beginPath();ctx.arc(b.x*W-b.r*.35,b.y*H-b.r*.35,b.r*.32,0,Math.PI*2);
+    ctx.beginPath();ctx.arc(bx-b.r*.35,b.y*H-b.r*.35,b.r*.32,0,Math.PI*2);
     ctx.fillStyle=`rgba(255,255,255,${b.op*2})`;ctx.fill();
     ctx.restore();
   });
@@ -874,6 +902,20 @@ function drawBackground(){
   ctx.save();ctx.font='26px serif';ctx.textAlign='center';ctx.shadowBlur=0;
   corals.forEach(c=>ctx.fillText(CORAL_E[c.t],c.x*W,H-17));
   ctx.restore();
+
+  // Perspective floor grid — converging lines toward horizon vanishing point
+  const vpx=W/2,vpy=H*0.38;
+  ctx.save();ctx.globalAlpha=0.055;ctx.strokeStyle='#00c8ff';ctx.lineWidth=0.8;
+  for(let i=0;i<=12;i++){
+    const fx=W*(i/12);
+    ctx.beginPath();ctx.moveTo(vpx+(fx-vpx)*0.06,vpy);ctx.lineTo(fx,H);ctx.stroke();
+  }
+  for(let j=1;j<=5;j++){
+    const t=j/5,fy=vpy+(H-vpy)*(t*t);
+    ctx.beginPath();ctx.moveTo(0,fy);ctx.lineTo(W,fy);ctx.stroke();
+  }
+  ctx.restore();
+
 
   // Layered sand floor
   const sand=ctx.createLinearGradient(0,H-32,0,H);
@@ -939,30 +981,70 @@ function drawCannon(){
   const cx=CX(),cy=CY();
   const col=WPN_COLORS[weaponType];
   ctx.save();
-  // Corner platform base
-  ctx.fillStyle='rgba(5,20,40,.85)';
-  ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.shadowBlur=8;ctx.shadowColor=col;
+  ctx.shadowBlur=12;ctx.shadowColor=col;
+
+  // 3D isometric platform base — top face (trapezoid for perspective)
   ctx.beginPath();
-  (function(x,y,w,h,r){ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();})(cx-28,cy-6,56,28,5);
-  ctx.fill();ctx.stroke();
-  // Bet level indicator on platform
-  ctx.shadowBlur=0;ctx.globalAlpha=.8;
-  ctx.fillStyle=col;ctx.font='bold 9px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText('×'+BET_VALS[betIdx],cx,cy+8);
-  // Turret pivot
-  ctx.globalAlpha=1;ctx.translate(cx,cy-4);ctx.rotate(cannonAngle-Math.PI/2);
-  const bg=ctx.createRadialGradient(0,0,3,0,0,15);
-  bg.addColorStop(0,'#2a3a4a');bg.addColorStop(1,'#0d1e2b');
-  ctx.beginPath();ctx.arc(0,0,15,0,Math.PI*2);
-  ctx.fillStyle=bg;ctx.shadowBlur=14;ctx.shadowColor=col;ctx.fill();
+  ctx.moveTo(cx-34,cy-10);ctx.lineTo(cx+34,cy-10);
+  ctx.lineTo(cx+30,cy+4);ctx.lineTo(cx-30,cy+4);ctx.closePath();
+  const topG=ctx.createLinearGradient(cx-34,cy-10,cx,cy+4);
+  topG.addColorStop(0,'rgba(22,55,88,.98)');topG.addColorStop(1,'rgba(10,28,52,.98)');
+  ctx.fillStyle=topG;ctx.fill();ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.stroke();
+
+  // Front face of platform
+  ctx.beginPath();
+  ctx.moveTo(cx-30,cy+4);ctx.lineTo(cx+30,cy+4);
+  ctx.lineTo(cx+30,cy+18);ctx.lineTo(cx-30,cy+18);ctx.closePath();
+  ctx.fillStyle='rgba(8,22,44,.98)';ctx.fill();ctx.stroke();
+
+  // Right side face of platform
+  ctx.beginPath();
+  ctx.moveTo(cx+30,cy+4);ctx.lineTo(cx+34,cy-10);
+  ctx.lineTo(cx+34,cy+2);ctx.lineTo(cx+30,cy+18);ctx.closePath();
+  ctx.fillStyle='rgba(4,14,30,.98)';ctx.fill();ctx.stroke();
+
+  // Top edge highlight
+  ctx.save();ctx.shadowBlur=0;ctx.globalAlpha=0.4;
+  ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(cx-32,cy-9);ctx.lineTo(cx+32,cy-9);ctx.stroke();
+  ctx.restore();
+
+  // Bet level label on front face
+  ctx.shadowBlur=0;ctx.globalAlpha=0.9;
+  ctx.fillStyle=col;ctx.font='bold 9px sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('×'+BET_VALS[betIdx],cx,cy+11);
+
+  // Turret pivot — 3D cylindrical look via radial gradient highlight
+  ctx.globalAlpha=1;ctx.translate(cx,cy-6);ctx.rotate(cannonAngle-Math.PI/2);
+  const bg=ctx.createRadialGradient(-5,-5,2,0,0,17);
+  bg.addColorStop(0,'#3a5a7a');bg.addColorStop(0.5,'#1a3a5a');bg.addColorStop(1,'#0a1e2e');
+  ctx.beginPath();ctx.arc(0,0,17,0,Math.PI*2);
+  ctx.fillStyle=bg;ctx.shadowBlur=18;ctx.shadowColor=col;ctx.fill();
   ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.stroke();
-  // Barrel
-  ctx.fillStyle='#344858';ctx.strokeStyle=col;ctx.lineWidth=1.5;
-  ctx.fillRect(-5,-22,10,22);ctx.strokeRect(-5,-22,10,22);
-  // Muzzle glow
-  ctx.shadowBlur=10;ctx.shadowColor=col;
-  ctx.fillStyle=col;ctx.globalAlpha=.6;
-  ctx.beginPath();ctx.arc(0,-22,4,0,Math.PI*2);ctx.fill();
+  // Specular highlight on turret dome
+  ctx.save();ctx.globalAlpha=0.28;
+  const hg=ctx.createRadialGradient(-5,-5,0,-5,-5,9);
+  hg.addColorStop(0,'rgba(255,255,255,.7)');hg.addColorStop(1,'transparent');
+  ctx.beginPath();ctx.arc(-5,-5,9,0,Math.PI*2);ctx.fillStyle=hg;ctx.fill();
+  ctx.restore();
+
+  // Barrel — cylindrical gradient
+  const bG=ctx.createLinearGradient(-6,-26,6,-26);
+  bG.addColorStop(0,'#0e2238');bG.addColorStop(0.3,'#2a5078');
+  bG.addColorStop(0.7,'#1a3858');bG.addColorStop(1,'#081420');
+  ctx.fillStyle=bG;ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.shadowBlur=0;
+  ctx.fillRect(-5,-26,10,26);ctx.strokeRect(-5,-26,10,26);
+  // Barrel highlight stripe (cylindrical sheen)
+  ctx.save();ctx.globalAlpha=0.22;ctx.fillStyle='#fff';
+  ctx.fillRect(-2,-25,2,24);ctx.restore();
+
+  // Muzzle glow ring
+  ctx.shadowBlur=14;ctx.shadowColor=col;
+  ctx.fillStyle=col;ctx.globalAlpha=0.75;
+  ctx.beginPath();ctx.arc(0,-26,5,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=0.9;ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.shadowBlur=0;
+  ctx.beginPath();ctx.arc(0,-26,5,0,Math.PI*2);ctx.stroke();
   ctx.restore();
 }
 
@@ -1040,7 +1122,8 @@ function gameLoop(ts){
   // Fish
   fishes.forEach(f=>f.update());
   fishes=fishes.filter(f=>!f.offScreen()&&!f.dead);
-  fishes.forEach(f=>f.draw());
+  // Y-sort: closer fish (higher Y) draw on top of distant fish (lower Y)
+  [...fishes].sort((a,b)=>a.y-b.y).forEach(f=>f.draw());
 
   // Bullets
   bullets.forEach(b=>b.update());
