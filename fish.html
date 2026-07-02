@@ -457,6 +457,8 @@ class Fish{
     const _art=FISH_ART[this.type.name];
     if(_art&&_art.complete&&_art.naturalWidth>0){
       const fw=this.w*2.2,fh=this.h*2.2;
+      // Clip to ellipse so JPEG square edges don't show
+      ctx.beginPath();ctx.ellipse(0,0,fw*0.52,fh*0.52,0,0,Math.PI*2);ctx.clip();
       if(this.type.whiteBg) ctx.globalCompositeOperation='multiply';
       ctx.drawImage(_art,-fw/2,-fh/2,fw,fh);
       ctx.globalCompositeOperation='source-over';
