@@ -451,9 +451,14 @@ class Fish{
     ctx.save();
     ctx.translate(dx,this.y);ctx.scale(depth,depth);
     if(this.type.special==='golden'){ctx.shadowBlur=22+Math.sin(this.goldAnim)*10;ctx.shadowColor='#ffd700';}
-    if(this.hitFlash>0){ctx.shadowBlur=24;ctx.shadowColor='#fff';ctx.globalAlpha=0.55+this.hitFlash*0.45;}
-    // Distant fish get subtle depth-haze blur
-    if(depth<0.72) ctx.filter=`blur(${((0.72-depth)*2.5).toFixed(1)}px)`;
+    // Depth haze: fade distant fish with alpha (avoids ctx.filter iOS Safari bug)
+    const basealpha = depth<0.72 ? 0.45+depth*0.76 : 1;
+    if(this.hitFlash>0){
+      ctx.shadowBlur=24;ctx.shadowColor='#fff';
+      ctx.globalAlpha=basealpha*(0.55+this.hitFlash*0.45);
+    } else {
+      ctx.globalAlpha=basealpha;
+    }
     const _art=FISH_ART[this.type.name];
     if(_art&&_art.complete&&_art.naturalWidth>0){
       const fw=this.w*2.2,fh=this.h*2.2;
@@ -463,10 +468,11 @@ class Fish{
       ctx.drawImage(_art,-fw/2,-fh/2,fw,fh);
       ctx.globalCompositeOperation='source-over';
     } else {
-      ctx.font=`${this.h*1.05}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillStyle='white';
+      ctx.font=`${this.h*1.1}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.fillText(this.type.emoji,0,0);
     }
-    ctx.filter='none';ctx.restore();
+    ctx.restore();
 
     // HP bar for tougher fish (depth-scaled position/width)
     if(this.maxHp>3&&this.hp<this.maxHp){
