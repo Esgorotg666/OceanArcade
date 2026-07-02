@@ -311,17 +311,23 @@ window.addEventListener('resize',resize); resize();
 
 // ══════════ FISH TYPES ══════════
 const FISH_TYPES=[
-  {name:'Blue Fish',   emoji:'🐟',hp:1, spd:2.6,reward:[2,5],   w:34,h:26,prob:28,special:null},
-  {name:'Clown Fish',  emoji:'🐠',hp:2, spd:2.1,reward:[5,12],  w:40,h:32,prob:20,special:null},
-  {name:'Puffer',      emoji:'🐡',hp:4, spd:1.5,reward:[12,22], w:48,h:38,prob:15,special:null},
-  {name:'Sea Turtle',  emoji:'🐢',hp:7, spd:1.1,reward:[24,40], w:56,h:44,prob:11,special:null},
-  {name:'Shark',       emoji:'🦈',hp:14,spd:1.9,reward:[45,80], w:70,h:46,prob:7, special:null},
-  {name:'Golden Koi',  emoji:'🎏',hp:4, spd:1.4,reward:[80,180],w:60,h:48,prob:2, special:'golden'},
-  {name:'Dragon',      emoji:'🐉',hp:36,spd:0.7,reward:[120,200],w:90,h:62,prob:3,special:'boss'},
-  {name:'Boss Crab',   emoji:'🦀',hp:70,spd:0.5,reward:[300,550],w:110,h:82,prob:2,special:'boss'},
-  {name:'Jellyfish',   emoji:'🪼',hp:2, spd:1.0,reward:[10,25], w:42,h:42,prob:7, special:'freeze'},
-  {name:'Octopus',     emoji:'🐙',hp:9, spd:0.9,reward:[32,60], w:55,h:50,prob:5, special:null},
+  {name:'Blue Fish',   emoji:'🐟',img:'assets/fish/fish-blue.jpg',    hp:1, spd:2.6,reward:[2,5],   w:34,h:26,prob:28,special:null},
+  {name:'Clown Fish',  emoji:'🐠',img:'assets/fish/fish-clown.jpg',   hp:2, spd:2.1,reward:[5,12],  w:40,h:32,prob:20,special:null},
+  {name:'Puffer',      emoji:'🐡',img:'assets/fish/fish-puffer.jpg',  hp:4, spd:1.5,reward:[12,22], w:48,h:38,prob:15,special:null,whiteBg:true},
+  {name:'Sea Turtle',  emoji:'🐢',img:'assets/fish/fish-manta.jpg',   hp:7, spd:1.1,reward:[24,40], w:56,h:44,prob:11,special:null},
+  {name:'Shark',       emoji:'🦈',img:'assets/fish/fish-shark.jpg',   hp:14,spd:1.9,reward:[45,80], w:70,h:46,prob:7, special:null,whiteBg:true},
+  {name:'Golden Koi',  emoji:'🎏',img:'assets/fish/fish-koi.jpg',     hp:4, spd:1.4,reward:[80,180],w:60,h:48,prob:2, special:'golden'},
+  {name:'Dragon',      emoji:'🐉',img:'assets/fish/fish-dragon.jpg',  hp:36,spd:0.7,reward:[120,200],w:90,h:62,prob:3,special:'boss'},
+  {name:'Boss Crab',   emoji:'🦀',img:'assets/fish/fish-boss.jpg',    hp:70,spd:0.5,reward:[300,550],w:110,h:82,prob:2,special:'boss'},
+  {name:'Jellyfish',   emoji:'🪼',img:'assets/fish/fish-jellyfish.jpg',hp:2,spd:1.0,reward:[10,25], w:42,h:42,prob:7, special:'freeze'},
+  {name:'Octopus',     emoji:'🐙',img:'assets/fish/fish-octopus.jpg', hp:9, spd:0.9,reward:[32,60], w:55,h:50,prob:5, special:null},
 ];
+
+// Preload fish artwork
+const FISH_ART={};
+FISH_TYPES.forEach(t=>{
+  if(t.img){const i=new Image();i.src=t.img;FISH_ART[t.name]=i;}
+});
 
 function pickFishType(){
   const total=FISH_TYPES.reduce((a,t)=>a+t.prob,0);
@@ -448,8 +454,16 @@ class Fish{
     if(this.hitFlash>0){ctx.shadowBlur=24;ctx.shadowColor='#fff';ctx.globalAlpha=0.55+this.hitFlash*0.45;}
     // Distant fish get subtle depth-haze blur
     if(depth<0.72) ctx.filter=`blur(${((0.72-depth)*2.5).toFixed(1)}px)`;
-    ctx.font=`${this.h*1.05}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(this.type.emoji,0,0);
+    const _art=FISH_ART[this.type.name];
+    if(_art&&_art.complete&&_art.naturalWidth>0){
+      const fw=this.w*2.2,fh=this.h*2.2;
+      if(this.type.whiteBg) ctx.globalCompositeOperation='multiply';
+      ctx.drawImage(_art,-fw/2,-fh/2,fw,fh);
+      ctx.globalCompositeOperation='source-over';
+    } else {
+      ctx.font=`${this.h*1.05}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(this.type.emoji,0,0);
+    }
     ctx.filter='none';ctx.restore();
 
     // HP bar for tougher fish (depth-scaled position/width)
