@@ -6,14 +6,14 @@
 <title>Fish Shooting – Ocean Arcade</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a001f;color:#fff;font-family:'Segoe UI',Arial,sans-serif;
+body{background:#010c18;color:#fff;font-family:'Segoe UI',Arial,sans-serif;
   overflow:hidden;height:100vh;display:flex;flex-direction:column;user-select:none;}
 
 /* ── HUD ── */
 #hud{
   display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;
   padding:8px 14px;
-  background:linear-gradient(180deg,rgba(10,0,31,.99),rgba(5,0,22,.96));
+  background:linear-gradient(180deg,rgba(0,8,22,.99),rgba(0,5,15,.96));
   border-bottom:2px solid #00d4ff;z-index:20;flex-shrink:0;
   box-shadow:0 2px 28px rgba(0,212,255,.22),0 0 0 1px rgba(0,212,255,.06);
 }
@@ -50,10 +50,7 @@ body{background:#0a001f;color:#fff;font-family:'Segoe UI',Arial,sans-serif;
   box-shadow:0 0 8px rgba(255,107,53,.6)}
 
 /* ── Game wrap ── */
-#gameWrap{
-  position:relative;flex:1;overflow:hidden;cursor:crosshair;
-  background:radial-gradient(circle at 50% 30%,rgba(80,0,120,.5) 0%,#0a001f 70%);
-}
+#gameWrap{position:relative;flex:1;overflow:hidden;cursor:crosshair}
 #gameCanvas{display:block;width:100%;height:100%}
 
 /* ── Bet / Weapon bar ── */
@@ -84,7 +81,7 @@ body{background:#0a001f;color:#fff;font-family:'Segoe UI',Arial,sans-serif;
 /* ── Overlays ── */
 .overlay{
   display:none;position:absolute;inset:0;
-  background:radial-gradient(ellipse at center,rgba(20,0,50,.92) 0%,rgba(5,0,20,.97) 100%);
+  background:radial-gradient(ellipse at center,rgba(0,15,35,.92) 0%,rgba(0,5,15,.97) 100%);
   align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:30;
   backdrop-filter:blur(2px);
 }
@@ -189,19 +186,10 @@ body{background:#0a001f;color:#fff;font-family:'Segoe UI',Arial,sans-serif;
 
   <div class="overlay active" id="startOverlay">
     <h2>🌊 FISH SHOOTING</h2>
-    <p>
-      Click/tap to shoot • Hold to auto-fire<br>
-      Cannon is in the <b>bottom-left corner</b><br><br>
-      <b>BET MULTIPLIER</b> — scales cost &amp; rewards together<br>
-      Higher bet = stronger bullets + bigger payouts<br><br>
-      🟡 Normal → standard shot<br>
-      🔴 Laser ×5 → pierces all fish instantly<br>
-      💣 Bomb ×10 → massive AOE explosion<br>
-      ⚡ Elec ×15 → chain lightning jumps 5 fish<br><br>
-      🎁 Treasure chests drift by every 30s — shoot them!<br>
-      ❄️ Kill a 🪼 jellyfish to freeze all fish 3 seconds<br><br>
-      Kill fast to build COMBO multiplier (up to ×5)!
-    </p>
+    <p>Click/tap to shoot • Hold to auto-fire<br>Cannon in bottom-left corner<br>Higher bet = stronger shots + bigger rewards<br><br>
+      🟡 Normal · 🔴 Laser ×5 · 💣 Bomb ×10 · ⚡ Elec ×15<br>
+      🎁 Treasure chests every 30s • ❄️ Jellyfish = freeze!<br>
+      Kill fast for COMBO bonus up to ×5!</p>
     <button class="big-btn" onclick="startGame()">▶ START GAME</button>
   </div>
 
@@ -300,6 +288,10 @@ function freezeAll(){
   flashBig('❄️ FREEZE! 3 SECONDS','#00d4ff');
   burst(W/2,H/2,['#00d4ff','#88ccff','#fff','#aaeeff'],30,7);
 }
+
+// Performance caps
+const MAX_FISH=DEEP_MODE?35:28;
+const MAX_PARTICLES=140;
 
 // Entities
 let fishes=[],bullets=[],lasers=[],chains=[],explosions=[],particles=[],chests=[];
@@ -1219,6 +1211,10 @@ function gameLoop(ts){
     }
   }
 
+  // Hard caps to keep frame rate stable
+  if(particles.length>MAX_PARTICLES)particles.length=MAX_PARTICLES;
+  if(fishes.length>MAX_FISH)fishes.length=MAX_FISH;
+
   // Spawn fish (schools + individuals)
   if(ts-lastSpawn>spawnInterval){
     spawnFish();lastSpawn=ts;
@@ -1345,20 +1341,20 @@ function updateAmmoDisplay(){
 
 // ══════════ FISH SPAWNING ══════════
 function spawnFish(){
-  // 35% chance to spawn a school of 2-4 small fish together (like real Juwa)
+  if(fishes.length>=MAX_FISH)return;
   if(Math.random()<0.35){
     const smallTypes=FISH_TYPES.filter(t=>!t.special&&t.hp<=4);
     const t=smallTypes[Math.floor(Math.random()*smallTypes.length)];
-    const count=2+Math.floor(Math.random()*3);
+    const count=Math.min(3,2+Math.floor(Math.random()*2));
     for(let i=0;i<count;i++){
       setTimeout(()=>{
-        if(!gameRunning||gamePaused)return;
+        if(!gameRunning||gamePaused||fishes.length>=MAX_FISH)return;
         const f=new Fish(t);
         f.y=Math.max(40,Math.min(H*0.76,f.y+(i-1)*rand(30,50)));
         fishes.push(f);
       },i*100);
     }
-  } else {
+  } else if(fishes.length<MAX_FISH){
     fishes.push(new Fish());
   }
 }
