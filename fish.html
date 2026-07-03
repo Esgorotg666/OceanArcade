@@ -199,7 +199,7 @@ body{background:#0a001f;color:#fff;font-family:'Segoe UI',Arial,sans-serif;
       💣 Bomb ×10 → massive AOE explosion<br>
       ⚡ Elec ×15 → chain lightning jumps 5 fish<br><br>
       🎁 Treasure chests drift by every 30s — shoot them!<br>
-      ❄️ Kill a 🪜 jellyfish to freeze all fish 3 seconds<br><br>
+      ❄️ Kill a 🪼 jellyfish to freeze all fish 3 seconds<br><br>
       Kill fast to build COMBO multiplier (up to ×5)!
     </p>
     <button class="big-btn" onclick="startGame()">▶ START GAME</button>
@@ -326,7 +326,7 @@ const FISH_TYPES=[
   {name:'Golden Koi',  emoji:'🎏',vid:'vid-golden',                       hp:4, spd:1.4,reward:[80,180],w:60,h:50,prob:2, special:'golden',whiteBg:true,behavior:'wave'},
   {name:'Dragon',      emoji:'🐉',img:'assets/fish/fish-dragon.jpg',      hp:36,spd:0.7,reward:[120,200],w:90,h:62,prob:3,special:'boss',              behavior:'wave'},
   {name:'Boss Crab',   emoji:'🦀',img:'assets/fish/char-boss.png',        hp:70,spd:0.5,reward:[300,550],w:110,h:82,prob:2,special:'boss',blackBg:true, behavior:'tentacle_swipe'},
-  {name:'Jellyfish',   emoji:'🪜',img:'assets/fish/fish-jellyfish.jpg',   hp:2, spd:1.0,reward:[10,25], w:42,h:42,prob:7, special:'freeze',            behavior:'sinusoidal'},
+  {name:'Jellyfish',   emoji:'🪼',img:'assets/fish/fish-jellyfish.jpg',   hp:2, spd:1.0,reward:[10,25], w:42,h:42,prob:7, special:'freeze',            behavior:'sinusoidal'},
   {name:'Octopus',     emoji:'🐙',img:'assets/fish/fish-octopus.jpg',     hp:9, spd:0.9,reward:[32,60], w:55,h:50,prob:5, special:null,               behavior:'erratic'},
 ];
 
@@ -1007,8 +1007,8 @@ function drawBackground(){
     const op=0.04+Math.sin(now/2200+i*0.9)*0.02;
     const col=shaftColors[i%3];
     const rg=ctx.createLinearGradient(rx,0,rx,H*.82);
-    rg.addColorStop(0,`${col}${(op*4).toFixed(3)}`);
-    rg.addColorStop(0.4,`${col}${(op*1.8).toFixed(3)}`);
+    rg.addColorStop(0,`${col}${(op*4).toFixed(3)})`);
+    rg.addColorStop(0.4,`${col}${(op*1.8).toFixed(3)})`);
     rg.addColorStop(1,`${col}0)`);
     ctx.beginPath();
     ctx.moveTo(rx-sw,0);ctx.lineTo(rx+sw,0);
