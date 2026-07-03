@@ -336,6 +336,7 @@ FISH_TYPES.forEach(t=>{
 // Video sprite map — filled after DOM ready (videos are in the HTML)
 const FISH_VID={};
 
+
 function pickFishType(){
   const total=FISH_TYPES.reduce((a,t)=>a+t.prob,0);
   let r=Math.random()*total;
