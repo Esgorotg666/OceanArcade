@@ -196,7 +196,7 @@ body{background:#010c18;color:#fff;font-family:'Segoe UI',Arial,sans-serif;
       💣 Bomb ×10 → massive AOE explosion<br>
       ⚡ Elec ×15 → chain lightning jumps 5 fish<br><br>
       🎁 Treasure chests drift by every 30s — shoot them!<br>
-      ❄️ Kill a 🪼 jellyfish to freeze all fish 3 seconds<br><br>
+      ❌ Kill a 🪴 jellyfish to freeze all fish 3 seconds<br><br>
       Kill fast to build COMBO multiplier (up to ×5)!
     </p>
     <button class="big-btn" onclick="startGame()">▶ START GAME</button>
@@ -315,16 +315,16 @@ window.addEventListener('resize',resize); resize();
 
 // ══════════ FISH TYPES ══════════
 const FISH_TYPES=[
-  {name:'Blue Fish',   emoji:'🐟',vid:'vid-blue',                         hp:1, spd:2.6,reward:[2,5],   w:38,h:30,prob:28,special:null,whiteBg:true},
-  {name:'Clown Fish',  emoji:'🐠',vid:'vid-clown',                        hp:2, spd:2.1,reward:[5,12],  w:44,h:36,prob:20,special:null,whiteBg:true},
-  {name:'Puffer',      emoji:'🐡',img:'assets/fish/fish-puffer.jpg',      hp:4, spd:1.5,reward:[12,22], w:48,h:38,prob:15,special:null,whiteBg:true},
-  {name:'Sea Turtle',  emoji:'🐢',img:'assets/fish/fish-manta.jpg',       hp:7, spd:1.1,reward:[24,40], w:56,h:44,prob:11,special:null},
-  {name:'Shark',       emoji:'🦈',img:'assets/fish/fish-shark.jpg',       hp:14,spd:1.9,reward:[45,80], w:70,h:46,prob:7, special:null,whiteBg:true},
-  {name:'Golden Koi',  emoji:'🎏',vid:'vid-golden',                       hp:4, spd:1.4,reward:[80,180],w:60,h:50,prob:2, special:'golden',whiteBg:true},
-  {name:'Dragon',      emoji:'🐉',img:'assets/fish/fish-dragon.jpg',      hp:36,spd:0.7,reward:[120,200],w:90,h:62,prob:3,special:'boss'},
-  {name:'Boss Crab',   emoji:'🦀',img:'assets/fish/fish-boss.jpg',        hp:70,spd:0.5,reward:[300,550],w:110,h:82,prob:2,special:'boss'},
-  {name:'Jellyfish',   emoji:'🪼',img:'assets/fish/fish-jellyfish.jpg',   hp:2, spd:1.0,reward:[10,25], w:42,h:42,prob:7, special:'freeze'},
-  {name:'Octopus',     emoji:'🐙',img:'assets/fish/fish-octopus.jpg',     hp:9, spd:0.9,reward:[32,60], w:55,h:50,prob:5, special:null},
+  {name:'Blue Fish',   emoji:'🐟',vid:'vid-blue',                         hp:1, spd:2.6,reward:[2,5],   w:38,h:30,prob:28,special:null,  whiteBg:true, behavior:'linear_fast'},
+  {name:'Clown Fish',  emoji:'🐠',vid:'vid-clown',                        hp:2, spd:2.1,reward:[5,12],  w:44,h:36,prob:20,special:null,  whiteBg:true, behavior:'sinusoidal'},
+  {name:'Puffer',      emoji:'🐡',img:'assets/fish/fish-puffer.jpg',      hp:4, spd:1.5,reward:[12,22], w:48,h:38,prob:15,special:null,  whiteBg:true, behavior:'floating_pulse'},
+  {name:'Sea Turtle',  emoji:'🐢',img:'assets/fish/fish-manta.jpg',       hp:7, spd:1.1,reward:[24,40], w:56,h:44,prob:11,special:null,               behavior:'slow_linear'},
+  {name:'Shark',       emoji:'🦈',img:'assets/fish/fish-shark.jpg',       hp:14,spd:1.9,reward:[45,80], w:70,h:46,prob:7, special:null,  whiteBg:true, behavior:'aggressive_linear'},
+  {name:'Golden Koi',  emoji:'🎏',vid:'vid-golden',                       hp:4, spd:1.4,reward:[80,180],w:60,h:50,prob:2, special:'golden',whiteBg:true,behavior:'wave'},
+  {name:'Dragon',      emoji:'🐉',img:'assets/fish/fish-dragon.jpg',      hp:36,spd:0.7,reward:[120,200],w:90,h:62,prob:3,special:'boss',              behavior:'wave'},
+  {name:'Boss Crab',   emoji:'🦀',img:'assets/fish/char-boss.png',        hp:70,spd:0.5,reward:[300,550],w:110,h:82,prob:2,special:'boss',blackBg:true, behavior:'tentacle_swipe'},
+  {name:'Jellyfish',   emoji:'🪴',img:'assets/fish/fish-jellyfish.jpg',   hp:2, spd:1.0,reward:[10,25], w:42,h:42,prob:7, special:'freeze',            behavior:'sinusoidal'},
+  {name:'Octopus',     emoji:'🐙',img:'assets/fish/fish-octopus.jpg',     hp:9, spd:0.9,reward:[32,60], w:55,h:50,prob:5, special:null,               behavior:'erratic'},
 ];
 
 // Preload static fish artwork
@@ -392,9 +392,7 @@ class Fish{
     this.wobble=Math.random()*Math.PI*2;
     this.dead=false;
     this.hitFlash=0;
-    // Golden glow anim
     this.goldAnim=0;
-    // Boss: oscillate
     this.bossOsc=0;
     if(t.special==='boss'){
       activeBoss=this;
@@ -404,20 +402,76 @@ class Fish{
     }
     if(t.special==='golden') flashBig('✨ GOLDEN FISH!','#ffd700');
     this.depthOsc=Math.random()*Math.PI*2;
+    this.animFrame=0;
+    this.animSpeed=Math.abs(t.spd)>2?0.18:0.12;
+    this.glowPulse=0;
+    this.trail=[];
+    this.scale=1;
+  }
+  updateMovement(){
+    const frozen=Date.now()<freezeUntil;
+    if(frozen) return;
+    switch(this.type.behavior||'slow_linear'){
+      case'linear_fast':
+        this.x+=this.spd;
+        this.y+=Math.sin(this.wobble)*0.4;
+        this.wobble+=0.12;
+        break;
+      case'sinusoidal':
+        this.x+=this.spd;
+        this.y+=Math.sin(this.wobble*1.6)*1.8;
+        this.wobble+=0.09;
+        break;
+      case'zigzag':
+        this.x+=this.spd;
+        this.y+=Math.sin(this.wobble*3.5)*2.2;
+        this.wobble+=0.22;
+        break;
+      case'floating_pulse':
+        this.x+=this.spd*0.6;
+        this.y+=Math.sin(this.wobble*0.8)*1.1;
+        this.scale=1+Math.sin(this.animFrame*4)*0.18;
+        this.wobble+=0.06;
+        break;
+      case'tentacle_swipe':
+        this.x+=this.spd*0.9;
+        this.y+=Math.sin(this.bossOsc)*2.4;
+        this.bossOsc+=0.035;
+        this.wobble+=0.07;
+        break;
+      case'erratic':
+        this.x+=this.spd;
+        this.y+=Math.sin(this.wobble*2.2)*2.8+Math.cos(this.wobble*1.4)*1.4;
+        this.wobble+=0.18;
+        break;
+      case'wave':
+        this.x+=this.spd;
+        this.y+=Math.sin(this.wobble)*1.6;
+        this.wobble+=0.07;
+        break;
+      case'aggressive_linear':
+        this.x+=this.spd*1.15;
+        this.y+=Math.sin(this.wobble)*0.9;
+        this.wobble+=0.14;
+        break;
+      default: // slow_linear
+        this.x+=this.spd;
+        this.y+=Math.sin(this.wobble)*0.7;
+        this.wobble+=0.05;
+        break;
+    }
+    if(this.y<35) this.vy=Math.abs(this.vy);
+    if(this.y>H*0.85) this.vy=-Math.abs(this.vy);
+    this.y+=this.vy*0.12;
+    if(Math.abs(this.spd)>2){
+      this.trail.push({x:this.x,y:this.y});
+      if(this.trail.length>7) this.trail.shift();
+    }
   }
   update(){
-    const frozen=Date.now()<freezeUntil;
-    if(!frozen){
-      this.x+=this.spd;
-      this.wobble+=0.08;
-      this.y+=Math.sin(this.wobble)*0.5+this.vy*0.1;
-      if(this.type.special==='boss'){
-        this.bossOsc+=0.03;
-        this.y+=Math.sin(this.bossOsc)*0.8;
-      }
-      if(this.y<30) this.vy=Math.abs(this.vy);
-      if(this.y>H*0.86) this.vy=-Math.abs(this.vy);
-    }
+    this.updateMovement();
+    this.animFrame+=this.animSpeed;
+    this.glowPulse=Math.sin(Date.now()/180)*0.2+1;
     if(this.hitFlash>0) this.hitFlash-=.12;
     if(this.type.special==='golden') this.goldAnim+=0.1;
     if(this===activeBoss){
@@ -426,6 +480,14 @@ class Fish{
     }
   }
   offScreen(){ return this.dir>0?this.x>W+this.w+20:this.x<-this.w-20 }
+  getGlowColor(){
+    if(this.type.special==='boss') return '#ff6b35';
+    if(this.type.special==='golden') return '#ffd700';
+    if(this.type.special==='freeze') return '#00d4ff';
+    if(this.type.hp>=14) return '#a855f7';
+    if(this.type.hp>=7) return '#ff9f1c';
+    return '#22ee88';
+  }
   // Returns a 0.55–1.2 depth factor: fish near top (far) are small, near bottom (close) are large
   getDepth(){ const base=0.55+(this.y/Math.max(H,400))*0.65; return base+Math.sin(Date.now()/2200+this.depthOsc)*0.05; }
   draw(){
@@ -434,6 +496,19 @@ class Fish{
     const flipX=this.dir<0;
     if(flipX){ctx.scale(-1,1);ctx.translate(-W,0);}
     const dx=flipX?W-this.x:this.x;
+
+    // Motion trail for fast fish
+    if(this.trail.length>0){
+      ctx.save();
+      this.trail.forEach((p,i)=>{
+        ctx.globalAlpha=0.35*(i/this.trail.length);
+        ctx.fillStyle='#00ffff';
+        const tw=this.w*0.3*depth;
+        const px=flipX?W-p.x:p.x;
+        ctx.fillRect(px-tw*0.5,p.y-3*depth,tw,6*depth);
+      });
+      ctx.restore();
+    }
 
     // 3D drop shadow — cast below fish, scales with depth
     ctx.save();
@@ -455,16 +530,18 @@ class Fish{
     ctx.shadowBlur=14;ctx.shadowColor=ringCol;ctx.stroke();
     ctx.restore();
 
-    // Fish emoji — depth-scaled around center for 3D perspective
+    // Fish sprite — depth-scaled around center for 3D perspective
     ctx.save();
-    ctx.translate(dx,this.y);ctx.scale(depth,depth);
-    if(this.type.special==='golden'){ctx.shadowBlur=22+Math.sin(this.goldAnim)*10;ctx.shadowColor='#ffd700';}
+    ctx.translate(dx,this.y);ctx.scale(depth*this.scale,depth*this.scale);
+    ctx.rotate(Math.sin(this.wobble)*0.08);
     // Depth haze: fade distant fish with alpha (avoids ctx.filter iOS Safari bug)
     const basealpha = depth<0.72 ? 0.45+depth*0.76 : 1;
     if(this.hitFlash>0){
       ctx.shadowBlur=24;ctx.shadowColor='#fff';
       ctx.globalAlpha=basealpha*(0.55+this.hitFlash*0.45);
     } else {
+      ctx.shadowBlur=14+this.glowPulse*6;
+      ctx.shadowColor=this.getGlowColor();
       ctx.globalAlpha=basealpha;
     }
     const _vid=this.type._vidEl;
@@ -477,10 +554,17 @@ class Fish{
       ctx.drawImage(_vid,-fw/2,-fh/2,fw,fh);
       ctx.globalCompositeOperation='source-over';
     } else if(_art&&_art.complete&&_art.naturalWidth>0){
-      ctx.beginPath();ctx.ellipse(0,0,fw*0.5,fh*0.5,0,0,Math.PI*2);ctx.clip();
-      if(this.type.whiteBg) ctx.globalCompositeOperation='multiply';
-      ctx.drawImage(_art,-fw/2,-fh/2,fw,fh);
-      ctx.globalCompositeOperation='source-over';
+      if(this.type.blackBg){
+        // Black background — screen blend makes black invisible against dark cave
+        ctx.globalCompositeOperation='screen';
+        ctx.drawImage(_art,-fw/2,-fh/2,fw,fh);
+        ctx.globalCompositeOperation='source-over';
+      } else {
+        ctx.beginPath();ctx.ellipse(0,0,fw*0.5,fh*0.5,0,0,Math.PI*2);ctx.clip();
+        if(this.type.whiteBg) ctx.globalCompositeOperation='multiply';
+        ctx.drawImage(_art,-fw/2,-fh/2,fw,fh);
+        ctx.globalCompositeOperation='source-over';
+      }
     } else {
       ctx.fillStyle='white';
       ctx.font=`${this.h*1.1}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
@@ -906,7 +990,7 @@ function drawBackground(){
     const op=0.04+Math.sin(now/2200+i*0.9)*0.02;
     const col=shaftColors[i%3];
     const rg=ctx.createLinearGradient(rx,0,rx,H*.82);
-    rg.addColorStop(0,`${col}${(op*4).toFixed(3)})`);
+    rg.addColorStop(0,`${col}${(op*4).toFixed(3)})`)
     rg.addColorStop(0.4,`${col}${(op*1.8).toFixed(3)})`);
     rg.addColorStop(1,`${col}0)`);
     ctx.beginPath();
