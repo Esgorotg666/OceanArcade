@@ -159,6 +159,10 @@ body{background:#010c18;color:#fff;font-family:'Segoe UI',Arial,sans-serif;
 <div id="gameWrap">
   <canvas id="gameCanvas"></canvas>
   <span id="soundToggle" onclick="toggleSound()">🔊</span>
+  <!-- Animated character video sprites (hidden, drawn into canvas) -->
+  <video id="vid-clown"  src="assets/fish/char-clown.mp4"  autoplay loop muted playsinline style="display:none"></video>
+  <video id="vid-blue"   src="assets/fish/char-blue.mp4"   autoplay loop muted playsinline style="display:none"></video>
+  <video id="vid-golden" src="assets/fish/char-golden.mp4" autoplay loop muted playsinline style="display:none"></video>
 
   <div class="bet-bar">
     <div class="bet-row" id="betRow">
@@ -311,23 +315,27 @@ window.addEventListener('resize',resize); resize();
 
 // ══════════ FISH TYPES ══════════
 const FISH_TYPES=[
-  {name:'Blue Fish',   emoji:'🐟',img:'assets/fish/fish-blue.jpg',    hp:1, spd:2.6,reward:[2,5],   w:34,h:26,prob:28,special:null},
-  {name:'Clown Fish',  emoji:'🐠',img:'assets/fish/fish-clown.jpg',   hp:2, spd:2.1,reward:[5,12],  w:40,h:32,prob:20,special:null},
-  {name:'Puffer',      emoji:'🐡',img:'assets/fish/fish-puffer.jpg',  hp:4, spd:1.5,reward:[12,22], w:48,h:38,prob:15,special:null,whiteBg:true},
-  {name:'Sea Turtle',  emoji:'🐢',img:'assets/fish/fish-manta.jpg',   hp:7, spd:1.1,reward:[24,40], w:56,h:44,prob:11,special:null},
-  {name:'Shark',       emoji:'🦈',img:'assets/fish/fish-shark.jpg',   hp:14,spd:1.9,reward:[45,80], w:70,h:46,prob:7, special:null,whiteBg:true},
-  {name:'Golden Koi',  emoji:'🎏',img:'assets/fish/fish-koi.jpg',     hp:4, spd:1.4,reward:[80,180],w:60,h:48,prob:2, special:'golden'},
-  {name:'Dragon',      emoji:'🐉',img:'assets/fish/fish-dragon.jpg',  hp:36,spd:0.7,reward:[120,200],w:90,h:62,prob:3,special:'boss'},
-  {name:'Boss Crab',   emoji:'🦀',img:'assets/fish/fish-boss.jpg',    hp:70,spd:0.5,reward:[300,550],w:110,h:82,prob:2,special:'boss'},
-  {name:'Jellyfish',   emoji:'🪼',img:'assets/fish/fish-jellyfish.jpg',hp:2,spd:1.0,reward:[10,25], w:42,h:42,prob:7, special:'freeze'},
-  {name:'Octopus',     emoji:'🐙',img:'assets/fish/fish-octopus.jpg', hp:9, spd:0.9,reward:[32,60], w:55,h:50,prob:5, special:null},
+  {name:'Blue Fish',   emoji:'🐟',vid:'vid-blue',                         hp:1, spd:2.6,reward:[2,5],   w:38,h:30,prob:28,special:null,whiteBg:true},
+  {name:'Clown Fish',  emoji:'🐠',vid:'vid-clown',                        hp:2, spd:2.1,reward:[5,12],  w:44,h:36,prob:20,special:null,whiteBg:true},
+  {name:'Puffer',      emoji:'🐡',img:'assets/fish/fish-puffer.jpg',      hp:4, spd:1.5,reward:[12,22], w:48,h:38,prob:15,special:null,whiteBg:true},
+  {name:'Sea Turtle',  emoji:'🐢',img:'assets/fish/fish-manta.jpg',       hp:7, spd:1.1,reward:[24,40], w:56,h:44,prob:11,special:null},
+  {name:'Shark',       emoji:'🦈',img:'assets/fish/fish-shark.jpg',       hp:14,spd:1.9,reward:[45,80], w:70,h:46,prob:7, special:null,whiteBg:true},
+  {name:'Golden Koi',  emoji:'🎏',vid:'vid-golden',                       hp:4, spd:1.4,reward:[80,180],w:60,h:50,prob:2, special:'golden',whiteBg:true},
+  {name:'Dragon',      emoji:'🐉',img:'assets/fish/fish-dragon.jpg',      hp:36,spd:0.7,reward:[120,200],w:90,h:62,prob:3,special:'boss'},
+  {name:'Boss Crab',   emoji:'🦀',img:'assets/fish/fish-boss.jpg',        hp:70,spd:0.5,reward:[300,550],w:110,h:82,prob:2,special:'boss'},
+  {name:'Jellyfish',   emoji:'🪼',img:'assets/fish/fish-jellyfish.jpg',   hp:2, spd:1.0,reward:[10,25], w:42,h:42,prob:7, special:'freeze'},
+  {name:'Octopus',     emoji:'🐙',img:'assets/fish/fish-octopus.jpg',     hp:9, spd:0.9,reward:[32,60], w:55,h:50,prob:5, special:null},
 ];
 
-// Preload fish artwork
+// Preload static fish artwork
 const FISH_ART={};
 FISH_TYPES.forEach(t=>{
   if(t.img){const i=new Image();i.src=t.img;FISH_ART[t.name]=i;}
 });
+
+// Video sprite map — filled after DOM ready (videos are in the HTML)
+const FISH_VID={};
+
 
 function pickFishType(){
   const total=FISH_TYPES.reduce((a,t)=>a+t.prob,0);
@@ -459,11 +467,17 @@ class Fish{
     } else {
       ctx.globalAlpha=basealpha;
     }
+    const _vid=this.type._vidEl;
     const _art=FISH_ART[this.type.name];
-    if(_art&&_art.complete&&_art.naturalWidth>0){
-      const fw=this.w*2.2,fh=this.h*2.2;
-      // Clip to ellipse so JPEG square edges don't show
-      ctx.beginPath();ctx.ellipse(0,0,fw*0.52,fh*0.52,0,0,Math.PI*2);ctx.clip();
+    const fw=this.w*2.4,fh=this.h*2.4;
+    if(_vid&&_vid.readyState>=2){
+      // Live animated video sprite
+      ctx.beginPath();ctx.ellipse(0,0,fw*0.5,fh*0.5,0,0,Math.PI*2);ctx.clip();
+      ctx.globalCompositeOperation='multiply';
+      ctx.drawImage(_vid,-fw/2,-fh/2,fw,fh);
+      ctx.globalCompositeOperation='source-over';
+    } else if(_art&&_art.complete&&_art.naturalWidth>0){
+      ctx.beginPath();ctx.ellipse(0,0,fw*0.5,fh*0.5,0,0,Math.PI*2);ctx.clip();
       if(this.type.whiteBg) ctx.globalCompositeOperation='multiply';
       ctx.drawImage(_art,-fw/2,-fh/2,fw,fh);
       ctx.globalCompositeOperation='source-over';
@@ -850,115 +864,95 @@ const SEAWEED=Array.from({length:12},()=>({x:Math.random()*0.9+0.05,phase:Math.r
 
 function drawBackground(){
   const now=Date.now();
-  // Rich deep-ocean gradient
-  const g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,'#010c18');g.addColorStop(.18,'#011828');
-  g.addColorStop(.5,'#001f38');g.addColorStop(.82,'#001428');g.addColorStop(1,'#00080f');
-  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
 
-  // Animated water surface at top (3D depth cue — looking up through water)
-  const waveT=now/600;
-  ctx.save();
-  for(let row=0;row<4;row++){
-    const baseY=4+row*9;
-    ctx.globalAlpha=0.14-row*0.025;
-    ctx.strokeStyle=`rgba(${80+row*20},${200+row*15},255,1)`;
-    ctx.lineWidth=1.6-row*0.25;ctx.shadowBlur=0;
-    ctx.beginPath();ctx.moveTo(0,baseY);
-    for(let wx=6;wx<=W;wx+=6) ctx.lineTo(wx,baseY+Math.sin(wx*0.028+waveT+row*1.3)*(4-row));
-    ctx.stroke();
-  }
-  const surf=ctx.createLinearGradient(0,0,0,38);
-  surf.addColorStop(0,'rgba(0,45,90,.5)');surf.addColorStop(1,'rgba(0,20,50,0)');
-  ctx.globalAlpha=1;ctx.fillStyle=surf;ctx.fillRect(0,0,W,38);
+  // ── Deep cave black base ──
+  ctx.fillStyle='#000508';ctx.fillRect(0,0,W,H);
+
+  // ── Rocky cave walls — dark jagged silhouettes on left/right edges ──
+  ctx.save();ctx.fillStyle='#060e0a';
+  // Left wall
+  ctx.beginPath();ctx.moveTo(0,0);
+  ctx.lineTo(W*0.13+Math.sin(now/4200)*4,0);
+  ctx.lineTo(W*0.09+Math.sin(now/3100+1)*3,H*0.22);
+  ctx.lineTo(W*0.15+Math.sin(now/3800+2)*4,H*0.42);
+  ctx.lineTo(W*0.07+Math.sin(now/4500+3)*3,H*0.65);
+  ctx.lineTo(W*0.12+Math.sin(now/3300+4)*4,H*0.85);
+  ctx.lineTo(0,H);ctx.closePath();ctx.fill();
+  // Right wall
+  ctx.beginPath();ctx.moveTo(W,0);
+  ctx.lineTo(W*0.87+Math.sin(now/4200+5)*4,0);
+  ctx.lineTo(W*0.91+Math.sin(now/3100+6)*3,H*0.22);
+  ctx.lineTo(W*0.85+Math.sin(now/3800+7)*4,H*0.42);
+  ctx.lineTo(W*0.93+Math.sin(now/4500+8)*3,H*0.65);
+  ctx.lineTo(W*0.88+Math.sin(now/3300+9)*4,H*0.85);
+  ctx.lineTo(W,H);ctx.closePath();ctx.fill();
   ctx.restore();
 
+  // ── Ambient deep teal glow in center-ocean ──
+  ctx.save();
+  const amb=ctx.createRadialGradient(W*.5,H*.38,0,W*.5,H*.38,W*.7);
+  amb.addColorStop(0,'rgba(0,40,60,.55)');
+  amb.addColorStop(.5,'rgba(0,20,35,.3)');
+  amb.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=amb;ctx.fillRect(0,0,W,H);
+  ctx.restore();
 
-  // Dramatic light shafts (10, screen blend, animated)
+  // ── Spotlight shafts from top (wide, god-ray style like reference) ──
   ctx.save();ctx.globalCompositeOperation='screen';
-  for(let i=0;i<10;i++){
-    const rx=W*(0.04+i*0.1)+Math.sin(now/3800+i*1.5)*60;
-    const sw=14+Math.sin(now/2100+i*2.2)*6;
-    const op=0.032+Math.sin(now/1700+i*0.8)*0.014;
-    const rg=ctx.createLinearGradient(rx,0,rx+sw*3,H*.76);
-    rg.addColorStop(0,`rgba(0,210,255,${op*3.5})`);
-    rg.addColorStop(0.35,`rgba(0,170,255,${op*1.8})`);
-    rg.addColorStop(1,'rgba(0,80,200,0)');
+  const shaftColors=['rgba(0,255,180,','rgba(60,180,255,','rgba(120,255,200,'];
+  for(let i=0;i<5;i++){
+    const rx=W*(0.12+i*0.19)+Math.sin(now/5000+i*1.8)*22;
+    const sw=8+Math.sin(now/2800+i*2)*4;
+    const op=0.04+Math.sin(now/2200+i*0.9)*0.02;
+    const col=shaftColors[i%3];
+    const rg=ctx.createLinearGradient(rx,0,rx,H*.82);
+    rg.addColorStop(0,`${col}${(op*4).toFixed(3)})`);
+    rg.addColorStop(0.4,`${col}${(op*1.8).toFixed(3)})`);
+    rg.addColorStop(1,`${col}0)`);
     ctx.beginPath();
     ctx.moveTo(rx-sw,0);ctx.lineTo(rx+sw,0);
-    ctx.lineTo(rx+sw*5.5,H*.76);ctx.lineTo(rx-sw*1.5,H*.76);
+    ctx.lineTo(rx+sw*6,H*.82);ctx.lineTo(rx-sw*2,H*.82);
     ctx.fillStyle=rg;ctx.fill();
   }
   ctx.restore();
 
-  // Glowing bubbles — larger ones (closer) drift horizontally for parallax depth
+  // ── Bubbles drifting up ──
   bgBubs.forEach((b,bi)=>{
     b.y-=b.spd/60;if(b.y<0){b.y=1;b.x=Math.random();}
-    const bx=b.x*W+Math.sin(now/4000+bi*0.7)*b.r*(b.r>2?3.5:1.5);
+    const bx=b.x*W+Math.sin(now/4000+bi*0.7)*b.r*(b.r>2?3:1.2);
     ctx.save();
-    ctx.shadowBlur=6;ctx.shadowColor=`rgba(0,200,255,${b.op*3})`;
+    ctx.shadowBlur=8;ctx.shadowColor=`rgba(0,255,160,${b.op*2})`;
     ctx.beginPath();ctx.arc(bx,b.y*H,b.r,0,Math.PI*2);
-    ctx.strokeStyle=`rgba(80,220,255,${b.op*1.8})`;ctx.lineWidth=1.3;ctx.stroke();
-    ctx.beginPath();ctx.arc(bx-b.r*.35,b.y*H-b.r*.35,b.r*.32,0,Math.PI*2);
-    ctx.fillStyle=`rgba(255,255,255,${b.op*2})`;ctx.fill();
+    ctx.strokeStyle=`rgba(80,255,180,${b.op*1.4})`;ctx.lineWidth=1.2;ctx.stroke();
     ctx.restore();
   });
 
-  // Tall, vivid swaying seaweed
+  // ── Floor coral garden — dark rocky with glowing accents ──
+  const floorH=H*0.06;
+  const floorG=ctx.createLinearGradient(0,H-floorH,0,H);
+  floorG.addColorStop(0,'rgba(0,0,0,0)');
+  floorG.addColorStop(0.4,'rgba(5,18,10,.85)');
+  floorG.addColorStop(1,'rgba(2,10,6,1)');
+  ctx.fillStyle=floorG;ctx.fillRect(0,H-floorH,W,floorH);
+
+  // ── Glowing seaweed ──
   const t=now/1000;
   SEAWEED.forEach(sw=>{
-    const sway=Math.sin(t*1.1+sw.phase)*16;
-    const tall=sw.h*2.4;
-    const swg=ctx.createLinearGradient(sw.x*W,H,sw.x*W+sway*.7,H-tall);
-    swg.addColorStop(0,'rgba(0,100,30,.75)');
-    swg.addColorStop(.5,'rgba(0,180,55,.5)');
-    swg.addColorStop(1,'rgba(0,230,80,.2)');
-    ctx.save();ctx.strokeStyle=swg;ctx.lineWidth=5.5;ctx.lineCap='round';
-    ctx.shadowBlur=9;ctx.shadowColor='rgba(0,210,60,.4)';
+    const sway=Math.sin(t*1.0+sw.phase)*14;
+    const tall=sw.h*2.8;
+    ctx.save();
+    ctx.shadowBlur=18;ctx.shadowColor='rgba(0,255,80,.6)';
+    ctx.strokeStyle='rgba(0,200,60,.7)';ctx.lineWidth=4;ctx.lineCap='round';
     ctx.beginPath();ctx.moveTo(sw.x*W,H);
-    ctx.bezierCurveTo(sw.x*W+sway*.45,H-tall*.38,sw.x*W+sway*.9,H-tall*.7,sw.x*W+sway*.7,H-tall);
+    ctx.bezierCurveTo(sw.x*W+sway*.4,H-tall*.4,sw.x*W+sway*.85,H-tall*.7,sw.x*W+sway*.7,H-tall);
     ctx.stroke();ctx.restore();
   });
 
-  // Coral / bottom decor
-  ctx.save();ctx.font='26px serif';ctx.textAlign='center';ctx.shadowBlur=0;
-  corals.forEach(c=>ctx.fillText(CORAL_E[c.t],c.x*W,H-17));
-  ctx.restore();
-
-  // Perspective floor grid — converging lines toward horizon vanishing point
-  const vpx=W/2,vpy=H*0.38;
-  ctx.save();ctx.globalAlpha=0.055;ctx.strokeStyle='#00c8ff';ctx.lineWidth=0.8;
-  for(let i=0;i<=12;i++){
-    const fx=W*(i/12);
-    ctx.beginPath();ctx.moveTo(vpx+(fx-vpx)*0.06,vpy);ctx.lineTo(fx,H);ctx.stroke();
-  }
-  for(let j=1;j<=5;j++){
-    const t=j/5,fy=vpy+(H-vpy)*(t*t);
-    ctx.beginPath();ctx.moveTo(0,fy);ctx.lineTo(W,fy);ctx.stroke();
-  }
-  ctx.restore();
-
-
-  // Layered sand floor
-  const sand=ctx.createLinearGradient(0,H-32,0,H);
-  sand.addColorStop(0,'rgba(0,0,0,0)');
-  sand.addColorStop(.35,'rgba(140,105,48,.32)');
-  sand.addColorStop(1,'rgba(90,65,25,.55)');
-  ctx.fillStyle=sand;ctx.fillRect(0,H-32,W,32);
-
-  // Caustic light ripples on floor
-  const cT=now/850;
-  ctx.save();ctx.globalAlpha=0.07;ctx.strokeStyle='#00d4ff';ctx.lineWidth=1.6;
-  for(let i=0;i<11;i++){
-    const cx=W*(0.06+i*0.088)+Math.sin(cT+i*1.4)*28;
-    const cr=16+Math.sin(cT*1.1+i*2.3)*7;
-    ctx.beginPath();ctx.ellipse(cx,H-17,cr,5,0,0,Math.PI*2);ctx.stroke();
-  }
-  ctx.restore();
-
-  // Edge vignette
-  const vig=ctx.createRadialGradient(W/2,H*.44,H*.3,W/2,H*.44,H*.92);
-  vig.addColorStop(0,'transparent');vig.addColorStop(1,'rgba(0,0,0,.72)');
+  // ── Strong vignette — corners very dark, arcade style ──
+  const vig=ctx.createRadialGradient(W*.5,H*.42,H*.15,W*.5,H*.42,H*.95);
+  vig.addColorStop(0,'rgba(0,0,0,0)');
+  vig.addColorStop(0.55,'rgba(0,0,0,.18)');
+  vig.addColorStop(1,'rgba(0,0,0,.88)');
   ctx.fillStyle=vig;ctx.fillRect(0,0,W,H);
 }
 
@@ -1277,6 +1271,14 @@ function togglePause(){
 }
 
 function startGame(){
+  // Wire up video sprites on first start
+  if(!FISH_VID['vid-clown']){
+    ['vid-clown','vid-blue','vid-golden'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el){ el.play().catch(()=>{}); FISH_VID[id]=el; }
+    });
+    FISH_TYPES.forEach(t=>{ if(t.vid) t._vidEl=FISH_VID[t.vid]; });
+  }
   document.getElementById('startOverlay').classList.remove('active');
   gameRunning=true;gamePaused=false;
   fishes=[];bullets=[];lasers=[];chains=[];explosions=[];particles=[];chests=[];
